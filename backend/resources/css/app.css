@@ -1,11 +1,32 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* Custom styles for Lavina Trucking */
+:root {
+    --primary-color: #1e40af; /* Blue for trucking theme */
+    --secondary-color: #f59e0b; /* Orange accent */
+    --dark-color: #1f2937;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.trucking-primary {
+    background-color: var(--primary-color);
+}
+
+.trucking-secondary {
+    background-color: var(--secondary-color);
+}
+
+/* Custom button styles */
+.btn-trucking {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+}
+
+/* Custom form styles */
+.form-input-trucking {
+    @apply border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm;
 }

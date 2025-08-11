@@ -20,34 +20,147 @@
         @endif
     </head>
     <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            Log in
-                        </a>
-
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
+        <!-- Lavina Trucking Header -->
+        <div class="w-full fixed top-0 left-0 z-50 bg-gradient-to-r from-yellow-400 via-green-500 to-teal-600 px-6 py-4 shadow-lg">
+            <div class="flex items-center justify-between max-w-6xl mx-auto">
+                <!-- Company Name -->
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-black font-bold text-lg">Nonoy Lavina Trucking Services</h1>
+                    <span class="text-black font-medium">Booking</span>
+                </div>
+                
+                <!-- Auth Buttons -->
+                @if (Route::has('login'))
+                    <div class="flex items-center space-x-4">
+                        @auth
+                            <a href="{{ url('/dashboard') }}" class="text-black font-medium hover:underline">
+                                Dashboard
                             </a>
+                        @else
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <span class="text-black">🔔</span>
+                                </div>
+                                <span class="text-black font-medium">Contact us</span>
+                                <button onclick="toggleAuthModal()" class="text-black font-medium hover:underline">
+                                    Sign up/Log in
+                                </button>
+                            </div>
+                        @endauth
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="h-16"></div> <!-- Spacer for fixed header -->
+
+        <!-- Authentication Modal -->
+        <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+                <!-- Close Button -->
+                <button onclick="toggleAuthModal()" class="float-right text-gray-400 hover:text-gray-600 text-2xl font-bold">×</button>
+                
+                <!-- Tab Buttons -->
+                <div class="flex mb-6">
+                    <button id="signupTab" onclick="showSignup()" class="flex-1 py-3 px-4 text-center font-medium bg-teal-600 text-white rounded-tl-md rounded-bl-md">
+                        Sign up
+                    </button>
+                    <button id="loginTab" onclick="showLogin()" class="flex-1 py-3 px-4 text-center font-medium bg-gray-200 text-gray-600 rounded-tr-md rounded-br-md">
+                        Log in
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="hidden">
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if (session('status'))
+                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('login') }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        <div>
+                            <input type="password" name="password" placeholder="Password" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        
+                        @if (Route::has('password.request'))
+                            <div class="text-center">
+                                <a href="{{ route('password.request') }}" class="text-gray-600 hover:text-teal-600 text-sm">
+                                    Forgot Password?
+                                </a>
+                            </div>
                         @endif
-                    @endauth
-                </nav>
-            @endif
+                        
+                        <button type="submit" class="w-full bg-teal-600 text-white py-3 rounded font-medium hover:bg-teal-700 transition duration-200">
+                            Log In
+                        </button>
+                        
+                        <div class="text-center">
+                            <span class="text-gray-500 text-sm">or</span>
+                        </div>
+                        
+                        <div class="text-center">
+                            <span class="text-gray-400 text-sm">🌐</span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm">
+                    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        <div class="flex space-x-4">
+                            <input type="text" name="first_name" value="{{ old('first_name') }}" placeholder="First Name" required
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                            <input type="text" name="last_name" value="{{ old('last_name') }}" placeholder="Last Name" required
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        <div>
+                            <input type="password" name="password" placeholder="Password" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        <div>
+                            <input type="password" name="password_confirmation" placeholder="Confirm Password" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" id="terms" name="terms" value="1" required class="mt-1 rounded">
+                            <label for="terms" class="text-sm text-gray-600 leading-5">
+                                I accept the <a href="#" class="text-teal-600 hover:underline">Terms of Service and Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-teal-600 text-white py-3 rounded font-medium hover:bg-teal-700 transition duration-200">
+                            Sign up
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden opacity-0">
+            <!-- Hidden placeholder for original header -->
         </header>
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
@@ -270,8 +383,94 @@
             </main>
         </div>
 
+        <!-- Footer -->
+        <div class="w-full max-w-4xl text-center py-8 text-sm text-gray-600">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div>
+                    <h4 class="font-semibold">Let's Connect</h4>
+                    <p>0917 132 8002</p>
+                    <div class="flex justify-center md:justify-start mt-2">
+                        <a href="#" class="text-blue-600 hover:text-blue-800">📘</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold">Opening hours</h4>
+                    <p>5:00 AM - 8:00 PM</p>
+                    <p>Daily</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold">Visit us</h4>
+                    <p>P-5 Poblacion Valencia</p>
+                    <p>City Bukidnon</p>
+                </div>
+            </div>
+        </div>
+
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif
+
+        <!-- JavaScript for Modal Functionality -->
+        <script>
+            function toggleAuthModal() {
+                const modal = document.getElementById('authModal');
+                modal.classList.toggle('hidden');
+            }
+
+            function showLogin() {
+                const loginForm = document.getElementById('loginForm');
+                const signupForm = document.getElementById('signupForm');
+                const loginTab = document.getElementById('loginTab');
+                const signupTab = document.getElementById('signupTab');
+
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                
+                // Style login tab as active
+                loginTab.classList.add('bg-teal-600', 'text-white');
+                loginTab.classList.remove('bg-gray-200', 'text-gray-600');
+                
+                // Style signup tab as inactive
+                signupTab.classList.remove('bg-teal-600', 'text-white');
+                signupTab.classList.add('bg-gray-200', 'text-gray-600');
+            }
+
+            function showSignup() {
+                const loginForm = document.getElementById('loginForm');
+                const signupForm = document.getElementById('signupForm');
+                const loginTab = document.getElementById('loginTab');
+                const signupTab = document.getElementById('signupTab');
+
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                
+                // Style signup tab as active
+                signupTab.classList.add('bg-teal-600', 'text-white');
+                signupTab.classList.remove('bg-gray-200', 'text-gray-600');
+                
+                // Style login tab as inactive
+                loginTab.classList.remove('bg-teal-600', 'text-white');
+                loginTab.classList.add('bg-gray-200', 'text-gray-600');
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('authModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    toggleAuthModal();
+                }
+            });
+
+            // Auto-show modal if there are form errors
+            @if ($errors->any() || session('status'))
+                document.addEventListener('DOMContentLoaded', function() {
+                    toggleAuthModal();
+                    
+                    // Show signup form if there are registration errors
+                    @if (old('first_name') || old('last_name') || old('terms'))
+                        showSignup();
+                    @endif
+                });
+            @endif
+        </script>
     </body>
 </html>

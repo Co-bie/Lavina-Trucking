@@ -19,8 +19,34 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        // Personal Information
+        'phone',
+        'address',
+        'city',
+        'state',
+        'zip_code',
+        'date_of_birth',
+        // Driver Information
+        'license_number',
+        'license_class',
+        'license_expiry',
+        'endorsements',
+        // Employment Information
+        'user_type',
+        'hire_date',
+        'employment_status',
+        'hourly_rate',
+        // Emergency Contact
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relationship',
+        // Additional fields
+        'notes',
+        'is_active',
     ];
 
     /**
@@ -43,6 +69,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'date_of_birth' => 'date',
+            'license_expiry' => 'date',
+            'hire_date' => 'date',
+            'hourly_rate' => 'decimal:2',
+            'is_active' => 'boolean',
         ];
     }
 }
