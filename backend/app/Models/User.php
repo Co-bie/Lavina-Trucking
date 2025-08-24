@@ -23,13 +23,16 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'profile_picture',
         // Personal Information
         'phone',
+        'contact_number',
         'address',
         'city',
         'state',
         'zip_code',
         'date_of_birth',
+        'age',
         // Driver Information
         'license_number',
         'license_class',
@@ -57,6 +60,17 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'user_type' => 'client',
+        'is_active' => true,
+        'employment_status' => 'active',
     ];
 
     /**

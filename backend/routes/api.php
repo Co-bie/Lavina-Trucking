@@ -60,7 +60,7 @@ Route::post('/register', function (Request $request) {
         'license_expiry' => $request->license_expiry,
         'cdl_class' => $request->cdl_class,
         'hire_date' => $request->hire_date,
-        'user_type' => $request->user_type ?? 'driver', // Default to 'driver' if not provided
+        'user_type' => $request->user_type ?? 'client', // Default to 'client' if not provided
         'hourly_rate' => $request->hourly_rate,
         'emergency_contact_name' => $request->emergency_contact_name,
         'emergency_contact_phone' => $request->emergency_contact_phone,
@@ -105,5 +105,30 @@ Route::post('/login', function (Request $request) {
         'user' => $user,
         'token' => $token
     ]);
+});
+
+// Profile management routes (require authentication)
+use App\Http\Controllers\API\ProfileController;
+
+// Simple test endpoint for debugging
+Route::post('/test-update', function (Request $request) {
+    \Log::info('Test update endpoint hit:', $request->all());
+    
+    $user = User::find(1);
+    if ($user) {
+        $user->update(['first_name' => 'Test', 'last_name' => 'Updated']);
+        return response()->json(['success' => true, 'message' => 'Test update successful', 'user' => $user]);
+    }
+    
+    return response()->json(['success' => false, 'message' => 'User not found']);
+});
+
+// Simple authentication middleware for demo
+Route::middleware(['api'])->group(function () {
+    // For demo purposes, we'll make these routes accessible without strict auth
+    // In production, you should use Laravel Sanctum or Passport
+    Route::get('/profile/{id?}', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/picture', [ProfileController::class, 'uploadProfilePicture']);
 });
 

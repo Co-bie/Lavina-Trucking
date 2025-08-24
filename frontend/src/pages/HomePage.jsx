@@ -196,20 +196,36 @@ function HomePage() {
             </div>
             <span style={{ color: 'black', fontWeight: '500' }}>Contact us</span>
             {isAuthenticated ? (
-              <button 
-                onClick={handleLogout}
-                style={{ 
-                  color: 'black', 
-                  fontWeight: '500', 
-                  background: 'none',
-                  border: '1px solid black',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Logout
-              </button>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => window.location.href = '/profile'}
+                  style={{ 
+                    color: 'black', 
+                    fontWeight: '500', 
+                    background: 'none',
+                    border: '1px solid black',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Profile
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  style={{ 
+                    color: 'black', 
+                    fontWeight: '500', 
+                    background: 'none',
+                    border: '1px solid black',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <button 
                 onClick={toggleModal}
@@ -606,6 +622,7 @@ function HomePage() {
           </div>
         </div>
       )}
+      
     </div>
   );
 }
