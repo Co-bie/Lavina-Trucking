@@ -51,13 +51,25 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
-# Wait for database\n\
-echo "Waiting for database..."\n\
-until mysql -h"$DB_HOST" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" >/dev/null 2>&1; do\n\
-    echo "Database not ready, waiting..."\n\
-    sleep 2\n\
+# Wait for database with better error handling\n\
+echo "Waiting for database connection..."\n\
+max_attempts=30\n\
+attempt=0\n\
+\n\
+while [ $attempt -lt $max_attempts ]; do\n\
+    if mysql -h database -u lavina_user -p"lavina_password" -e "SELECT 1" >/dev/null 2>&1; then\n\
+        echo "✅ Database connection successful!"\n\
+        break\n\
+    fi\n\
+    attempt=$((attempt + 1))\n\
+    echo "Database not ready (attempt $attempt/$max_attempts), waiting 3 seconds..."\n\
+    sleep 3\n\
 done\n\
-echo "Database is ready!"\n\
+\n\
+if [ $attempt -eq $max_attempts ]; then\n\
+    echo "❌ Database connection failed after $max_attempts attempts"\n\
+    exit 1\n\
+fi\n\
 \n\
 # Create .env file from docker environment\n\
 if [ ! -f .env ]; then\n\
@@ -88,7 +100,7 @@ php artisan config:cache\n\
 php artisan route:cache\n\
 \n\
 # Start Apache\n\
-echo "Starting Apache..."\n\
+echo "🚀 Starting Apache server..."\n\
 apache2-foreground' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
