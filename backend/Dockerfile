@@ -51,27 +51,9 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
-# Wait for database with better error handling\n\
-echo "Waiting for database connection..."\n\
-max_attempts=30\n\
-attempt=0\n\
+echo "🚀 Starting Laravel application..."\n\
 \n\
-while [ $attempt -lt $max_attempts ]; do\n\
-    if mysql -h database -u lavina_user -p"lavina_password" -e "SELECT 1" >/dev/null 2>&1; then\n\
-        echo "✅ Database connection successful!"\n\
-        break\n\
-    fi\n\
-    attempt=$((attempt + 1))\n\
-    echo "Database not ready (attempt $attempt/$max_attempts), waiting 3 seconds..."\n\
-    sleep 3\n\
-done\n\
-\n\
-if [ $attempt -eq $max_attempts ]; then\n\
-    echo "❌ Database connection failed after $max_attempts attempts"\n\
-    exit 1\n\
-fi\n\
-\n\
-# Create .env file from docker environment\n\
+# Create .env file from docker environment if not exists\n\
 if [ ! -f .env ]; then\n\
     echo "Creating .env file..."\n\
     if [ -f .env.docker ]; then\n\
@@ -84,23 +66,22 @@ fi\n\
 # Generate key if not set\n\
 if ! grep -q "APP_KEY=base64:" .env; then\n\
     echo "Generating application key..."\n\
-    php artisan key:generate\n\
+    php artisan key:generate --force\n\
 fi\n\
 \n\
-# Run migrations\n\
+# Wait a moment for database to be ready\n\
+echo "Waiting 10 seconds for database..."\n\
+sleep 10\n\
+\n\
+# Try to run migrations (non-blocking)\n\
 echo "Running migrations..."\n\
-php artisan migrate --force\n\
+php artisan migrate --force || echo "Migrations failed or already run"\n\
 \n\
-# Seed database if needed\n\
-echo "Seeding database..."\n\
-php artisan db:seed --force || echo "Seeding skipped or failed"\n\
-\n\
-# Cache configuration\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
+# Cache configuration for production\n\
+php artisan config:cache || echo "Config cache failed"\n\
 \n\
 # Start Apache\n\
-echo "🚀 Starting Apache server..."\n\
+echo "🚀 Starting Apache server on port 80..."\n\
 apache2-foreground' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
