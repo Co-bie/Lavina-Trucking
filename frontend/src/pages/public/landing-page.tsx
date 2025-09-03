@@ -1,14 +1,8 @@
 import LandingPageHeader from "../../components/landing-page/header";
 import HeroSection from "../../components/landing-page/hero-section";
-<<<<<<< HEAD
 
 import AboutUs from "../../components/landing-page/about-us";
 import Footer from "../../components/landing-page/footer";
-=======
-import AboutUs from "../../components/landing-page/about-us";
-import Footer from "../../components/landing-page/footer";
-
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
 // Main Landing Page Component
 export default function LandingPage() {
   return (

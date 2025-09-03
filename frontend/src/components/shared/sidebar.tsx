@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import {
-  Calendar,
-  User,
-  Truck,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Truck, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SidebarItem {
   name: string;
   path: string;
-  icon: React.ReactNode;
 }
 
 export default function Sidebar() {
@@ -24,17 +15,14 @@ export default function Sidebar() {
     {
       name: "Schedules",
       path: "/schedules",
-      icon: <Calendar size={20} />,
     },
     {
       name: "Profile",
       path: "/profile",
-      icon: <User size={20} />,
     },
     {
-      name: "Settings",
-      path: "/settings",
-      icon: <Settings size={20} />,
+      name: "Drivers",
+      path: "/drivers",
     },
   ];
 
@@ -88,13 +76,6 @@ export default function Sidebar() {
                   : "text-gray-600 hover:bg-[#cfab3d] hover:bg-opacity-10 hover:text-[#1e786c]"
               }`}
           >
-            <span
-              className={`flex items-center justify-center ${
-                isCollapsed ? "w-full" : "mr-3"
-              }`}
-            >
-              {item.icon}
-            </span>
             {!isCollapsed && <span>{item.name}</span>}
           </button>
         ))}

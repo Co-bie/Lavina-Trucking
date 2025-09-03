@@ -78,11 +78,7 @@ export default function HeroSection() {
 
         <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 animate-fade-in-up animation-delay-1200">
           {[
-<<<<<<< HEAD
             { icon: Shield, label: "Safe Delivery", value: "10K+" },
-=======
-            { icon: Shield, label: "99.9% Safe Delivery", value: "10K+" },
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
             { icon: Zap, label: "Years Experience", value: "25+" },
           ].map((stat, i) => (
             <div

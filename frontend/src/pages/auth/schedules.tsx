@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MockData } from "@/constants/mock-data";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import AuthLayout from "@/components/shared/auth-layout";
+import ShipmentAssigningForm from "@/components/auth-components/shipment-assigning-form";
 export default function Schedules() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -170,6 +171,7 @@ export default function Schedules() {
                       </p>
                       <p className="mt-1">Truck: {shipment.truck_number}</p>
                     </div>
+                    <ShipmentAssigningForm shipmentId={shipment.id} />
                   </div>
                 ))}
               </div>

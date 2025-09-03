@@ -21,7 +21,6 @@ export function Login() {
 
     try {
       await login(email, password);
-<<<<<<< HEAD
       setLocation("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
@@ -29,36 +28,6 @@ export function Login() {
       } else {
         setError("An unknown error occurred");
         console.log(err);
-=======
-      
-      // Check if there's a stored redirect location
-      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-      if (redirectPath && redirectPath !== "/login") {
-        sessionStorage.removeItem("redirectAfterLogin");
-        setLocation(redirectPath);
-      } else {
-        setLocation("/dashboard");
-      }
-    } catch (err: any) {
-      console.error("Login error details:", err);
-      
-      if (err.response) {
-        // Handle Laravel validation errors
-        if (err.response.data?.errors) {
-          const errors = err.response.data.errors;
-          // Get the first error message from validation errors
-          const firstError = Object.values(errors)[0];
-          setError(Array.isArray(firstError) ? firstError[0] : firstError);
-        } else {
-          setError(err.response.data?.message || `Server error: ${err.response.status}`);
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        setError("Network error: Unable to connect to server. Please check if the backend is running.");
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        setError(err.message || "An error occurred during login");
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
       }
     } finally {
       setLoading(false);

@@ -7,10 +7,6 @@ import React, {
 } from "react";
 import { authAPI } from "../services/api";
 import type { User } from "@/types/type";
-<<<<<<< HEAD
-=======
-
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -22,10 +18,6 @@ interface AuthContextType {
     password_confirmation: string
   ) => Promise<void>;
   logout: () => void;
-<<<<<<< HEAD
-=======
-  isAuthenticated: boolean;
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,26 +59,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-<<<<<<< HEAD
     const response = await authAPI.login({ email, password });
     const { user, token } = response.data;
 
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     setUser(user);
-=======
-    try {
-      const response = await authAPI.login({ email, password });
-      const { user, token } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
   };
 
   const register = async (
@@ -95,7 +73,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string,
     password_confirmation: string
   ) => {
-<<<<<<< HEAD
     const response = await authAPI.register({
       name,
       email,
@@ -107,47 +84,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     setUser(user);
-=======
-    try {
-      // Split name into first and last name for backend compatibility
-      const nameParts = name.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
-      const response = await authAPI.register({
-        name,
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        password,
-        password_confirmation,
-      });
-      const { user, token } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
-    } catch (error) {
-      console.error("Register error:", error);
-      throw error;
-    }
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
   };
 
   const logout = () => {
     authAPI.logout().catch(() => {});
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-<<<<<<< HEAD
     setUser(null);
-=======
-    sessionStorage.removeItem("redirectAfterLogin");
-    setUser(null);
-    
-    // Use window.location.href to properly navigate to login
-    // This maintains browser history better than programmatic navigation
-    window.location.href = "/login";
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
   };
 
   const value = {
@@ -156,10 +99,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
-<<<<<<< HEAD
-=======
-    isAuthenticated: !!user,
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

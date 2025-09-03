@@ -13,7 +13,4 @@ module.exports = {
     },
     plugins: [],
 };
-<<<<<<< HEAD
 
-=======
->>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
