@@ -1,10 +1,17 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+// Database viewer route for development
+Route::get('/db-viewer', function () {
+    $users = User::all();
+    return view('db-viewer', compact('users'));
 });
 
 Route::get('/dashboard', function () {

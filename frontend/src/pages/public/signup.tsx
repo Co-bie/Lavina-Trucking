@@ -21,6 +21,10 @@ export function Signup() {
     setLoading(true);
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+<<<<<<< HEAD
+=======
+      setLoading(false);
+>>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
       return;
     }
     try {

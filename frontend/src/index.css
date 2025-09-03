@@ -1,5 +1,8 @@
 @import "tailwindcss";
+<<<<<<< HEAD
 @import "tw-animate-css";
+=======
+>>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
 
 :root {
   --radius: 0.625rem;
@@ -36,6 +39,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+<<<<<<< HEAD
 .dark {
   --background: linear-gradient(135deg, #1e786c 0%, #cfab3d 100%);
   --foreground: oklch(0.985 0 0);
@@ -68,4 +72,41 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+=======
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+>>>>>>> cc024f2abfab9c996eb85828c3eb46cc1f7a6b20
 }
