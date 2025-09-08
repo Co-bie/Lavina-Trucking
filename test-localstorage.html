@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LocalStorage Test</title>
+</head>
+<body>
+    <h1>LocalStorage Debug Tool</h1>
+    
+    <button onclick="checkLocalStorage()">Check LocalStorage</button>
+    <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        function checkLocalStorage() {
+            const output = document.getElementById('output');
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            let html = '<h2>LocalStorage Contents:</h2>';
+            html += '<p><strong>Token:</strong> ' + (token || 'Not found') + '</p>';
+            html += '<p><strong>User:</strong> ' + (user || 'Not found') + '</p>';
+            
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    html += '<p><strong>Parsed User Data:</strong></p>';
+                    html += '<pre>' + JSON.stringify(userData, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<p><strong>Error parsing user data:</strong> ' + e.message + '</p>';
+                }
+            }
+            
+            output.innerHTML = html;
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.getElementById('output').innerHTML = '<p>LocalStorage cleared!</p>';
+        }
+        
+        // Auto-check on page load
+        checkLocalStorage();
+    </script>
+</body>
+</html>

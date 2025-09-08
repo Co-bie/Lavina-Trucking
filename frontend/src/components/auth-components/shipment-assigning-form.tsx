@@ -7,7 +7,9 @@ export default function ShipmentAssigningForm({
 }: {
   shipmentId: string;
 }) {
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    console.log('Assigning shipment:', shipmentId);
+  };
 
   return (
     <form>

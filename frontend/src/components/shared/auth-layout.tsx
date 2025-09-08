@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import UserHeader from "../shared/user-header";
 import Sidebar from "../shared/sidebar";
-import Footer from "../landing-page/footer";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -21,7 +20,6 @@ export default function AuthLayout({ children, title }: AuthLayoutProps) {
           {children}
         </main>
       </div>
-      <Footer />
     </div>
   );
 }

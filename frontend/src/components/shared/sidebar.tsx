@@ -1,17 +1,37 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Truck, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Truck, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 interface SidebarItem {
   name: string;
   path: string;
+  adminOnly?: boolean;
 }
 
 export default function Sidebar() {
   const [location, setLocation] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user } = useAuth();
 
   const navItems: SidebarItem[] = [
+    {
+      name: "Dashboard",
+      path: "/dashboard",
+    },
+    {
+      name: "User Management",
+      path: "/user-management",
+      adminOnly: true,
+    },
+    {
+      name: "Drivers",
+      path: "/drivers",
+    },
+    {
+      name: "Trucks",
+      path: "/trucks",
+    },
     {
       name: "Schedules",
       path: "/schedules",
@@ -20,11 +40,15 @@ export default function Sidebar() {
       name: "Profile",
       path: "/profile",
     },
-    {
-      name: "Drivers",
-      path: "/drivers",
-    },
   ];
+
+  // Filter nav items based on user role
+  const filteredNavItems = navItems.filter(item => {
+    if (item.adminOnly && user?.user_type !== 'admin') {
+      return false;
+    }
+    return true;
+  });
 
   const handleNavigation = (path: string) => {
     setLocation(path);
@@ -64,7 +88,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 px-2 py-4 space-y-1">
-        {navItems.map((item) => (
+        {filteredNavItems.map((item) => (
           <button
             type="button"
             key={item.path}
@@ -80,39 +104,6 @@ export default function Sidebar() {
           </button>
         ))}
       </nav>
-
-      <div className="p-4 border-t border-gray-100">
-        <div
-          className={`flex items-center ${
-            isCollapsed ? "justify-center" : "justify-between"
-          }`}
-        >
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-[#cfab3d] flex items-center justify-center text-white text-xs font-bold">
-                JD
-              </div>
-              <div className="text-xs">
-                <p className="font-medium text-gray-800">John Doe</p>
-                <p className="text-gray-500">Admin</p>
-              </div>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="w-8 h-8 rounded-full bg-[#cfab3d] flex items-center justify-center text-white text-xs font-bold">
-              JD
-            </div>
-          )}
-          <a
-            href="/login"
-            className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
-            type="button"
-          >
-            <span className="sr-only">Log Out</span>
-            <LogOut size={16} />
-          </a>
-        </div>
-      </div>
     </div>
   );
 }

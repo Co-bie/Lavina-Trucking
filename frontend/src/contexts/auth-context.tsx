@@ -18,6 +18,7 @@ interface AuthContextType {
     password_confirmation: string
   ) => Promise<void>;
   logout: () => void;
+  updateUser: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,31 +41,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      authAPI
-        .getUser()
-        .then((response) => {
-          setUser(response.data);
-        })
-        .catch(() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
+    const storedUser = localStorage.getItem("user");
+    
+    if (token && storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+      } catch (error) {
+        console.error("Error parsing stored user data:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     }
+    
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await authAPI.login({ email, password });
-    const { user, token } = response.data;
-
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
+    try {
+      console.log("Login attempt with:", { email });
+      
+      const response = await authAPI.login({ email, password });
+      
+      console.log("Login response:", response);
+      
+      // Handle successful login
+      if (response.data.success) {
+        const { user, token } = response.data;
+        
+        console.log("Login successful, storing data:", { user, token });
+        
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        setUser(user);
+        
+        console.log("Data stored in localStorage");
+      } else {
+        // Handle unsuccessful login
+        throw new Error(response.data.message || "Login failed");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      // Handle API errors with specific messages
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("An unexpected error occurred during login");
+      }
+    }
   };
 
   const register = async (
@@ -93,12 +119,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

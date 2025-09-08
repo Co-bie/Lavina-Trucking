@@ -10,7 +10,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: lavina_trucking
     ports:
-      - "3306:3306"
+      - "0.0.0.0:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -19,7 +19,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
 
   # Laravel Backend
   backend:
@@ -32,7 +32,7 @@ services:
       APP_NAME: "Lavina Trucking"
       APP_ENV: production
       APP_DEBUG: false
-      APP_URL: http://localhost:8000
+      APP_URL: http://0.0.0.0:8000
       
       DB_CONNECTION: mysql
       DB_HOST: database
@@ -51,8 +51,13 @@ services:
       QUEUE_CONNECTION: sync
       SESSION_DRIVER: file
       SESSION_LIFETIME: 120
+      
+      # CORS and Sanctum configuration for external access
+      SANCTUM_STATEFUL_DOMAINS: "localhost,127.0.0.1,192.168.*.*,10.*.*.*,172.16.*.*"
+      SESSION_DOMAIN: ".localhost"
+      CORS_ALLOWED_ORIGINS: "*"
     ports:
-      - "8000:80"
+      - "0.0.0.0:8000:80"
     volumes:
       - ./backend/storage:/var/www/html/storage
     depends_on:
@@ -66,10 +71,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${FRONTEND_API_URL:-http://localhost:8000/api}
     container_name: lavina-trucking-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "0.0.0.0:3000:80"
     depends_on:
       - backend
     networks:
@@ -84,8 +91,9 @@ services:
       PMA_HOST: database
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: root
+      PMA_ABSOLUTE_URI: http://0.0.0.0:8080/
     ports:
-      - "8080:80"
+      - "0.0.0.0:8080:80"
     depends_on:
       - database
     networks:

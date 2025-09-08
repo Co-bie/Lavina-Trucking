@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Truck;
+use App\Models\Trip;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -46,6 +48,176 @@ Route::post('/create-admin', function (Request $request) {
 // Get all users (for your HomePage display)
 Route::get('/users', function () {
     return response()->json(User::all());
+});
+
+// Get all drivers
+Route::get('/drivers', function () {
+    $drivers = User::where('user_type', 'driver')->get();
+    return response()->json([
+        'success' => true,
+        'data' => $drivers
+    ]);
+});
+
+// Get single driver profile
+Route::get('/drivers/{id}', function ($id) {
+    $driver = User::where('id', $id)->where('user_type', 'driver')->first();
+    
+    if (!$driver) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Driver not found'
+        ], 404);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'data' => $driver
+    ]);
+});
+
+// Update driver profile
+Route::put('/drivers/{id}', function (Request $request, $id) {
+    $driver = User::where('id', $id)->where('user_type', 'driver')->first();
+    
+    if (!$driver) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Driver not found'
+        ], 404);
+    }
+    
+    // Validate the request
+    $request->validate([
+        'first_name' => 'sometimes|string|max:255',
+        'last_name' => 'sometimes|string|max:255',
+        'email' => 'sometimes|email|unique:users,email,' . $id,
+        'phone' => 'sometimes|string|max:20',
+        'contact_number' => 'sometimes|string|max:20',
+        'address' => 'sometimes|string|max:500',
+        'city' => 'sometimes|string|max:100',
+        'state' => 'sometimes|string|max:100',
+        'zip_code' => 'sometimes|string|max:20',
+        'age' => 'sometimes|integer|min:16|max:100',
+        'license_number' => 'sometimes|string|max:50',
+        'license_class' => 'sometimes|string|max:10',
+        'license_expiry' => 'sometimes|date',
+        'endorsements' => 'sometimes|string|max:255',
+        'hire_date' => 'sometimes|date',
+        'employment_status' => 'sometimes|in:active,inactive,terminated',
+        'hourly_rate' => 'sometimes|numeric|min:0',
+        'emergency_contact_name' => 'sometimes|string|max:255',
+        'emergency_contact_phone' => 'sometimes|string|max:20',
+        'emergency_contact_relationship' => 'sometimes|string|max:100',
+        'date_of_birth' => 'sometimes|date',
+        'notes' => 'sometimes|string|max:1000',
+    ]);
+    
+    // Update the driver
+    $updateData = $request->only([
+        'first_name', 'last_name', 'email', 'phone', 'contact_number', 'address',
+        'city', 'state', 'zip_code', 'age', 'license_number', 'license_class',
+        'license_expiry', 'endorsements', 'hire_date', 'employment_status',
+        'hourly_rate', 'emergency_contact_name', 'emergency_contact_phone',
+        'emergency_contact_relationship', 'date_of_birth', 'notes'
+    ]);
+    
+    // Update the name field if first_name or last_name changed
+    if (isset($updateData['first_name']) || isset($updateData['last_name'])) {
+        $firstName = $updateData['first_name'] ?? $driver->first_name;
+        $lastName = $updateData['last_name'] ?? $driver->last_name;
+        $updateData['name'] = $firstName . ' ' . $lastName;
+    }
+    
+    $driver->update($updateData);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Driver profile updated successfully',
+        'data' => $driver->fresh()
+    ]);
+});
+
+// Create test drivers endpoint
+Route::post('/create-test-drivers', function () {
+    $drivers = [
+        [
+            'name' => 'John Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john.driver@lavina.com',
+            'password' => Hash::make('password123'),
+            'user_type' => 'driver',
+            'phone' => '+1 555-0123',
+            'address' => '123 Main St',
+            'city' => 'Manila',
+            'state' => 'Metro Manila',
+            'age' => 35,
+            'license_number' => 'DL123456789',
+            'license_class' => 'Class A',
+            'license_expiry' => '2026-12-31',
+            'emergency_contact_name' => 'Jane Doe',
+            'emergency_contact_phone' => '+1 555-0124',
+            'emergency_contact_relationship' => 'Wife',
+            'is_active' => true,
+        ],
+        [
+            'name' => 'Mike Johnson',
+            'first_name' => 'Mike',
+            'last_name' => 'Johnson',
+            'email' => 'mike.driver@lavina.com',
+            'password' => Hash::make('password123'),
+            'user_type' => 'driver',
+            'phone' => '+1 555-0125',
+            'address' => '456 Oak Ave',
+            'city' => 'Quezon City',
+            'state' => 'Metro Manila',
+            'age' => 42,
+            'license_number' => 'DL987654321',
+            'license_class' => 'Class B',
+            'license_expiry' => '2027-06-15',
+            'emergency_contact_name' => 'Sarah Johnson',
+            'emergency_contact_phone' => '+1 555-0126',
+            'emergency_contact_relationship' => 'Sister',
+            'is_active' => true,
+        ],
+        [
+            'name' => 'Carlos Santos',
+            'first_name' => 'Carlos',
+            'last_name' => 'Santos',
+            'email' => 'carlos.driver@lavina.com',
+            'password' => Hash::make('password123'),
+            'user_type' => 'driver',
+            'phone' => '+63 917 555 0127',
+            'address' => '789 Pine Rd',
+            'city' => 'Makati',
+            'state' => 'Metro Manila',
+            'age' => 28,
+            'license_number' => 'DL456789123',
+            'license_class' => 'Class A',
+            'license_expiry' => '2025-03-20',
+            'emergency_contact_name' => 'Maria Santos',
+            'emergency_contact_phone' => '+63 917 555 0128',
+            'emergency_contact_relationship' => 'Mother',
+            'is_active' => false,
+        ]
+    ];
+
+    $createdDrivers = [];
+    foreach ($drivers as $driverData) {
+        // Check if driver already exists
+        $existing = User::where('email', $driverData['email'])->first();
+        if (!$existing) {
+            $driver = User::create($driverData);
+            $createdDrivers[] = $driver;
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Test drivers created successfully',
+        'data' => $createdDrivers
+    ]);
 });
 
 // Register new user
@@ -124,23 +296,38 @@ Route::post('/login', function (Request $request) {
 
     $user = User::where('email', $request->email)->first();
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
+    // Check if user exists
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No account found with this email address.',
+            'error_type' => 'user_not_found'
+        ], 401);
+    }
+
+    // Check if password is correct
+    if (!Hash::check($request->password, $user->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'The password you entered is incorrect. Please check your password and try again.',
+            'error_type' => 'invalid_password'
+        ], 401);
     }
 
     // Check if user is active/not blocked
     if (!$user->is_active) {
-        throw ValidationException::withMessages([
-            'email' => ['Your account has been blocked. Please contact an administrator.'],
-        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Your account has been blocked by an administrator. Please contact support for assistance.',
+            'error_type' => 'account_blocked'
+        ], 403);
     }
 
     // Create a simple token (in production, use Laravel Sanctum)
     $token = base64_encode($user->id . '|' . $user->email . '|' . now()->timestamp);
 
     return response()->json([
+        'success' => true,
         'message' => 'Login successful',
         'user' => $user,
         'token' => $token
@@ -172,12 +359,321 @@ Route::middleware(['api'])->group(function () {
     Route::post('/profile/picture', [ProfileController::class, 'uploadProfilePicture']);
 });
 
+// Trucks API endpoints
+Route::get('/trucks', function () {
+    $trucks = Truck::all();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $trucks
+    ]);
+});
+
+Route::get('/trucks/{id}', function ($id) {
+    $truck = Truck::find($id);
+    
+    if (!$truck) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Truck not found'
+        ], 404);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'data' => $truck
+    ]);
+});
+
+// Create sample trucks endpoint
+Route::post('/create-sample-trucks', function () {
+    $trucks = [
+        [
+            'truck_number' => 'LT-001',
+            'model' => 'Freightliner Cascadia',
+            'plate_number' => 'ABC-1234',
+            'color' => 'Blue',
+            'year' => 2022,
+            'status' => 'active',
+            'mileage' => 45000.50,
+            'notes' => 'Primary delivery truck for Metro Manila routes'
+        ],
+        [
+            'truck_number' => 'LT-002',
+            'model' => 'Peterbilt 579',
+            'plate_number' => 'XYZ-5678',
+            'color' => 'Red',
+            'year' => 2021,
+            'status' => 'active',
+            'mileage' => 67500.25,
+            'notes' => 'Long-haul truck for Luzon routes'
+        ],
+        [
+            'truck_number' => 'LT-003',
+            'model' => 'Kenworth T680',
+            'plate_number' => 'DEF-9012',
+            'color' => 'White',
+            'year' => 2023,
+            'status' => 'maintenance',
+            'mileage' => 12000.00,
+            'notes' => 'Newest addition to fleet, currently in scheduled maintenance'
+        ],
+        [
+            'truck_number' => 'LT-004',
+            'model' => 'Volvo VNL 860',
+            'plate_number' => 'GHI-3456',
+            'color' => 'Black',
+            'year' => 2020,
+            'status' => 'active',
+            'mileage' => 89250.75,
+            'notes' => 'Heavy-duty truck for special cargo deliveries'
+        ]
+    ];
+    
+    foreach ($trucks as $truckData) {
+        Truck::updateOrCreate(
+            ['truck_number' => $truckData['truck_number']],
+            $truckData
+        );
+    }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Sample trucks created successfully',
+        'data' => Truck::all()
+    ]);
+});
+
+// Trips API endpoints
+Route::get('/trips', function () {
+    $trips = Trip::with(['truck', 'driver'])->orderBy('trip_date', 'desc')->get();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $trips
+    ]);
+});
+
+Route::get('/trips/{id}', function ($id) {
+    $trip = Trip::with(['truck', 'driver'])->find($id);
+    
+    if (!$trip) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Trip not found'
+        ], 404);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'data' => $trip
+    ]);
+});
+
+// Assign driver to trip
+Route::put('/trips/{id}/assign-driver', function (Request $request, $id) {
+    $trip = Trip::find($id);
+    
+    if (!$trip) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Trip not found'
+        ], 404);
+    }
+    
+    $request->validate([
+        'driver_id' => 'required|exists:users,id'
+    ]);
+    
+    // Verify the user is actually a driver
+    $driver = User::where('id', $request->driver_id)
+                 ->where('user_type', 'driver')
+                 ->first();
+    
+    if (!$driver) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Selected user is not a driver'
+        ], 400);
+    }
+    
+    $trip->driver_id = $request->driver_id;
+    $trip->status = 'assigned';
+    $trip->save();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Driver assigned successfully',
+        'data' => $trip->load(['truck', 'driver'])
+    ]);
+});
+
+// Unassign driver from trip
+Route::post('/trips/{id}/unassign-driver', function ($id) {
+    $trip = Trip::find($id);
+    
+    if (!$trip) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Trip not found'
+        ], 404);
+    }
+    
+    $trip->driver_id = null;
+    $trip->status = 'pending';
+    $trip->save();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Driver unassigned successfully',
+        'data' => $trip->load(['truck', 'driver'])
+    ]);
+});
+
+// Get trips for a specific driver
+Route::get('/drivers/{driverId}/trips', function ($driverId) {
+    // Verify the driver exists
+    $driver = User::where('id', $driverId)
+                 ->where('user_type', 'driver')
+                 ->first();
+    
+    if (!$driver) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Driver not found'
+        ], 404);
+    }
+    
+    // Get trips assigned to this driver
+    $trips = Trip::with(['truck', 'driver'])
+                ->where('driver_id', $driverId)
+                ->orderBy('trip_date', 'asc')
+                ->get();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $trips,
+        'driver' => $driver
+    ]);
+});
+
+// Create sample trips endpoint
+Route::post('/create-sample-trips', function () {
+    // Get available trucks
+    $trucks = Truck::where('status', 'active')->get();
+    
+    if ($trucks->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No active trucks available. Please create trucks first.'
+        ], 400);
+    }
+    
+    $trips = [
+        [
+            'trip_code' => 'TRP-' . date('Y') . '-001',
+            'trip_date' => now()->addDays(1),
+            'client_name' => 'ABC Manufacturing Corp',
+            'client_contact' => '+63 917 123 4567',
+            'client_email' => 'logistics@abcmanufacturing.com',
+            'departure_point' => 'Manila Port, Manila',
+            'destination' => 'Cebu Industrial Park, Cebu',
+            'goods_description' => 'Electronics components and machinery parts',
+            'cargo_weight' => 12.5,
+            'cargo_type' => 'fragile',
+            'truck_id' => $trucks->random()->id,
+            'status' => 'pending',
+            'estimated_cost' => 85000.00,
+            'estimated_departure_time' => '06:00',
+            'estimated_arrival_time' => '18:00',
+            'special_instructions' => 'Handle with care - fragile electronics'
+        ],
+        [
+            'trip_code' => 'TRP-' . date('Y') . '-002',
+            'trip_date' => now()->addDays(2),
+            'client_name' => 'Fresh Foods Distribution',
+            'client_contact' => '+63 932 987 6543',
+            'client_email' => 'orders@freshfoods.ph',
+            'departure_point' => 'Baguio Vegetable Market, Baguio',
+            'destination' => 'SM Mall of Asia, Pasay',
+            'goods_description' => 'Fresh vegetables and fruits',
+            'cargo_weight' => 8.2,
+            'cargo_type' => 'perishable',
+            'truck_id' => $trucks->random()->id,
+            'status' => 'pending',
+            'estimated_cost' => 45000.00,
+            'estimated_departure_time' => '04:00',
+            'estimated_arrival_time' => '12:00',
+            'special_instructions' => 'Refrigerated transport required'
+        ],
+        [
+            'trip_code' => 'TRP-' . date('Y') . '-003',
+            'trip_date' => now()->addDays(3),
+            'client_name' => 'Construction Plus Inc',
+            'client_contact' => '+63 919 555 7890',
+            'client_email' => 'procurement@constructionplus.com',
+            'departure_point' => 'Bataan Steel Mill, Bataan',
+            'destination' => 'BGC Construction Site, Taguig',
+            'goods_description' => 'Steel beams and construction materials',
+            'cargo_weight' => 25.0,
+            'cargo_type' => 'heavy',
+            'truck_id' => $trucks->random()->id,
+            'status' => 'pending',
+            'estimated_cost' => 120000.00,
+            'estimated_departure_time' => '05:30',
+            'estimated_arrival_time' => '14:00',
+            'special_instructions' => 'Requires heavy-duty truck and special permits'
+        ],
+        [
+            'trip_code' => 'TRP-' . date('Y') . '-004',
+            'trip_date' => now()->addDays(4),
+            'client_name' => 'Pharmaceutical Solutions Ltd',
+            'client_contact' => '+63 928 111 2233',
+            'client_email' => 'logistics@pharmasolutions.ph',
+            'departure_point' => 'Pharma Warehouse, Laguna',
+            'destination' => 'Medical Center, Iloilo',
+            'goods_description' => 'Medical supplies and pharmaceuticals',
+            'cargo_weight' => 3.8,
+            'cargo_type' => 'temperature_controlled',
+            'truck_id' => $trucks->random()->id,
+            'status' => 'pending',
+            'estimated_cost' => 95000.00,
+            'estimated_departure_time' => '08:00',
+            'estimated_arrival_time' => '20:00',
+            'special_instructions' => 'Temperature-controlled transport. Chain of custody required.'
+        ]
+    ];
+    
+    foreach ($trips as $tripData) {
+        Trip::updateOrCreate(
+            ['trip_code' => $tripData['trip_code']],
+            $tripData
+        );
+    }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Sample trips created successfully',
+        'data' => Trip::with(['truck', 'driver'])->get()
+    ]);
+});
+
 // User Management Routes (Admin only)
 // Simple middleware check for admin users
 Route::middleware(['api'])->group(function () {
     // Get all users (with filtering)
     Route::get('/admin/users', function (Request $request) {
-        // In production, add proper admin authentication check
+        // Simple admin check - in production, use proper middleware
+        $userId = $request->user_id ?? 2; // Default to admin user for testing
+        $currentUser = User::find($userId);
+        
+        if (!$currentUser || $currentUser->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Admin privileges required.'
+            ], 403);
+        }
+        
         $query = User::query();
         
         if ($request->has('search')) {
@@ -208,6 +704,17 @@ Route::middleware(['api'])->group(function () {
     
     // Create new user
     Route::post('/admin/users', function (Request $request) {
+        // Admin check
+        $userId = $request->user_id ?? 2;
+        $currentUser = User::find($userId);
+        
+        if (!$currentUser || $currentUser->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Admin privileges required.'
+            ], 403);
+        }
+        
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -247,6 +754,17 @@ Route::middleware(['api'])->group(function () {
     
     // Update user
     Route::put('/admin/users/{id}', function (Request $request, $id) {
+        // Admin check
+        $userId = $request->user_id ?? 2;
+        $currentUser = User::find($userId);
+        
+        if (!$currentUser || $currentUser->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Admin privileges required.'
+            ], 403);
+        }
+        
         $user = User::findOrFail($id);
         
         $request->validate([
@@ -283,7 +801,18 @@ Route::middleware(['api'])->group(function () {
     });
     
     // Toggle user active status (block/unblock)
-    Route::patch('/admin/users/{id}/toggle-status', function ($id) {
+    Route::patch('/admin/users/{id}/toggle-status', function (Request $request, $id) {
+        // Admin check
+        $userId = $request->user_id ?? 2;
+        $currentUser = User::find($userId);
+        
+        if (!$currentUser || $currentUser->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Admin privileges required.'
+            ], 403);
+        }
+        
         $user = User::findOrFail($id);
         $user->update(['is_active' => !$user->is_active]);
         
@@ -295,7 +824,18 @@ Route::middleware(['api'])->group(function () {
     });
     
     // Delete user (soft delete or permanent delete)
-    Route::delete('/admin/users/{id}', function ($id) {
+    Route::delete('/admin/users/{id}', function (Request $request, $id) {
+        // Admin check
+        $userId = $request->user_id ?? 2;
+        $currentUser = User::find($userId);
+        
+        if (!$currentUser || $currentUser->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Admin privileges required.'
+            ], 403);
+        }
+        
         $user = User::findOrFail($id);
         $user->delete();
         
@@ -304,5 +844,53 @@ Route::middleware(['api'])->group(function () {
             'message' => 'User deleted successfully'
         ]);
     });
+});
+
+// Profile management endpoints (require authentication)
+Route::middleware('api')->group(function () {
+    // Get current user profile
+    Route::get('/profile/{id?}', [App\Http\Controllers\API\ProfileController::class, 'show']);
+    
+    // Update current user profile
+    Route::match(['PUT', 'PATCH'], '/profile', [App\Http\Controllers\API\ProfileController::class, 'update']);
+    
+    // Upload profile picture
+    Route::post('/profile/picture', [App\Http\Controllers\API\ProfileController::class, 'uploadProfilePicture']);
+    Route::post('/profile/upload-picture', [App\Http\Controllers\API\ProfileController::class, 'uploadProfilePicture']);
+});
+
+// Tasks API endpoints
+Route::get('/tasks', function (Request $request) {
+    // For now, return empty array as tasks aren't implemented yet
+    return response()->json([
+        'success' => true,
+        'data' => []
+    ]);
+});
+
+Route::post('/tasks', function (Request $request) {
+    // Placeholder for creating tasks
+    return response()->json([
+        'success' => true,
+        'message' => 'Task creation not implemented yet',
+        'data' => []
+    ]);
+});
+
+Route::put('/tasks/{id}', function (Request $request, $id) {
+    // Placeholder for updating tasks
+    return response()->json([
+        'success' => true,
+        'message' => 'Task update not implemented yet',
+        'data' => []
+    ]);
+});
+
+Route::delete('/tasks/{id}', function (Request $request, $id) {
+    // Placeholder for deleting tasks
+    return response()->json([
+        'success' => true,
+        'message' => 'Task deletion not implemented yet'
+    ]);
 });
 

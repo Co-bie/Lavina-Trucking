@@ -1,11 +1,41 @@
-import { useState } from "react";
-import { MockData } from "@/constants/mock-data";
+import { useState, useEffect } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import AuthLayout from "@/components/shared/auth-layout";
-import ShipmentAssigningForm from "@/components/auth-components/shipment-assigning-form";
+import { useAuth } from "@/contexts/auth-context";
+import { tripsAPI, type Trip } from "@/lib/api/trips";
+import { Badge } from "@/components/ui/badge";
 export default function Schedules() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.id && user?.user_type === 'driver') {
+      loadDriverTrips();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const loadDriverTrips = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await tripsAPI.getDriverTrips(user.id);
+      if (response.success) {
+        setTrips(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load driver trips:', error);
+      setError('Failed to load your scheduled trips');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -41,16 +71,29 @@ export default function Schedules() {
     return date.toLocaleDateString(undefined, options);
   };
 
-  const dailyShipments = MockData.filter((schedule) =>
-    isSameDay(new Date(schedule.date), selectedDate)
+  // Filter trips for the selected date
+  const dailyTrips = trips.filter((trip) =>
+    isSameDay(new Date(trip.trip_date), selectedDate)
   );
 
-  const daysWithShipments = MockData.filter((schedule) =>
-    isSameMonth(new Date(schedule.date), currentMonth)
-  ).map((schedule) => new Date(schedule.date).getDate());
+  // Get days that have trips in the current month
+  const daysWithTrips = trips.filter((trip) =>
+    isSameMonth(new Date(trip.trip_date), currentMonth)
+  ).map((trip) => new Date(trip.trip_date).getDate());
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'assigned': return 'bg-blue-100 text-blue-800';
+      case 'in_progress': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-gray-100 text-gray-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   const DayWithShipments = ({ date }: { date: Date }) => {
-    const hasShipments = daysWithShipments.includes(date.getDate());
+    const hasTrips = daysWithTrips.includes(date.getDate());
     const isSelected = isSameDay(date, selectedDate);
     const isCurrentMonth = isSameMonth(date, currentMonth);
 
@@ -68,7 +111,7 @@ export default function Schedules() {
         onClick={() => setSelectedDate(date)}
       >
         {date.getDate()}
-        {hasShipments && (
+        {hasTrips && (
           <span className="absolute top-0 right-0 h-2 w-2 bg-[#cfab3d] rounded-full"></span>
         )}
       </div>
@@ -91,7 +134,7 @@ export default function Schedules() {
     <AuthLayout title="Schedules">
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-[#1e786c] mb-8">
-          Shipment Schedule
+          My Trip Schedule
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -141,37 +184,63 @@ export default function Schedules() {
 
           <div className="bg-white rounded-xl shadow-md p-6">
             <h2 className="text-xl font-semibold text-[#1e786c] mb-4">
-              Shipments for {formatDisplayDate(selectedDate)}
+              Scheduled Trips for {formatDisplayDate(selectedDate)}
             </h2>
 
-            {dailyShipments.length === 0 ? (
+            {loading ? (
               <p className="text-gray-500 text-center py-8">
-                No shipments scheduled for this date
+                Loading your scheduled trips...
+              </p>
+            ) : error ? (
+              <p className="text-red-500 text-center py-8">
+                {error}
+              </p>
+            ) : user?.user_type !== 'driver' ? (
+              <p className="text-gray-500 text-center py-8">
+                Trip schedules are only available for drivers
+              </p>
+            ) : dailyTrips.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                No trips scheduled for this date
               </p>
             ) : (
               <div className="space-y-4">
-                {dailyShipments.map((shipment) => (
+                {dailyTrips.map((trip) => (
                   <div
-                    key={shipment.id}
-                    className="border-l-4 border-[#cfab3d] pl-4 py-2"
+                    key={trip.id}
+                    className="border-l-4 border-[#cfab3d] pl-4 py-3 bg-gray-50 rounded-r-lg"
                   >
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium text-gray-800">
-                        {shipment.locations.departure_point} →{" "}
-                        {shipment.locations.destination}
+                        {trip.departure_point} → {trip.destination}
                       </h3>
-                      <span className="text-sm bg-[#1e786c] bg-opacity-10 text-white px-2 py-1 rounded-full">
-                        {shipment.time}
-                      </span>
+                      <div className="flex gap-2">
+                        <Badge 
+                          className={`text-xs ${getStatusColor(trip.status)}`}
+                        >
+                          {trip.status.toUpperCase()}
+                        </Badge>
+                        <span className="text-sm bg-[#1e786c] text-white px-2 py-1 rounded-full">
+                          {trip.estimated_departure_time}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-2 text-sm text-gray-600">
-                      <p>
-                        {shipment.goods.item} • {shipment.goods.weight_in_kgs}{" "}
-                        kg
-                      </p>
-                      <p className="mt-1">Truck: {shipment.truck_number}</p>
+                    
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><strong>Trip Code:</strong> {trip.trip_code}</p>
+                      <p><strong>Client:</strong> {trip.client_name}</p>
+                      <p><strong>Contact:</strong> {trip.client_contact}</p>
+                      <p><strong>Cargo:</strong> {trip.goods_description} • {trip.cargo_weight} tons</p>
+                      {trip.truck && (
+                        <p><strong>Truck:</strong> {trip.truck.truck_number} ({trip.truck.model})</p>
+                      )}
+                      <p><strong>Estimated Arrival:</strong> {trip.estimated_arrival_time}</p>
+                      {trip.special_instructions && (
+                        <p className="italic text-orange-600">
+                          <strong>Special Instructions:</strong> {trip.special_instructions}
+                        </p>
+                      )}
                     </div>
-                    <ShipmentAssigningForm shipmentId={shipment.id} />
                   </div>
                 ))}
               </div>

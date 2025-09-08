@@ -4,7 +4,8 @@ import { taskAPI } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash } from "lucide-react";
 import type { Task } from "@/types/type";
-import Header from "../../components/shared/header";
+import AuthLayout from "@/components/shared/auth-layout";
+import TripsManagement from "@/components/dashboard/TripsManagement";
 import {
   Dialog,
   DialogTrigger,
@@ -17,6 +18,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,9 +38,13 @@ export default function Dashboard() {
   const fetchTasks = async () => {
     try {
       const res = await taskAPI.getTasks();
-      setTasks(res.data);
-    } catch {
+      // Handle the API response structure correctly
+      const tasksData = res.data?.data || [];
+      setTasks(Array.isArray(tasksData) ? tasksData : []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
       setError("Failed to load tasks");
+      setTasks([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -110,19 +116,18 @@ export default function Dashboard() {
   if (loading) return <div className="p-6">Loading...</div>;
 
   return (
-    <div>
-      <Header />
-      <div className="max-w-5xl mx-auto px-6 py-8">
+    <AuthLayout title="Dashboard">
+      <div className="space-y-6">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            Welcome, {user?.name || "User"}
-          </h1>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Welcome, {user?.first_name || user?.name || "User"}
+          </h2>
           <p className="text-gray-500">Here's what's on your plate today.</p>
         </div>
 
         {error && <div className="mb-4 text-red-600">{error}</div>}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-medium text-gray-800">My Tasks</h2>
+          <h3 className="text-lg font-medium text-gray-800">My Tasks</h3>
           <Button onClick={() => setShowForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Task
@@ -261,7 +266,10 @@ export default function Dashboard() {
             ))
           )}
         </div>
+
+        {/* Trips Management Section */}
+        <TripsManagement className="mt-8" />
       </div>
-    </div>
+    </AuthLayout>
   );
 }

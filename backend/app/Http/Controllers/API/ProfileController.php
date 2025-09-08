@@ -16,13 +16,16 @@ class ProfileController extends Controller
      */
     public function show(Request $request, $id = null)
     {
-        // For demo purposes, if ID is provided, get that user
-        // Otherwise, try to get authenticated user or fallback to first user
-        if ($id) {
+        // For demo purposes, check for user_id in request to simulate authentication
+        $userId = $request->input('user_id') ?? $request->header('X-User-ID');
+        
+        if ($userId) {
+            $user = User::find($userId);
+        } elseif ($id) {
             $user = User::find($id);
         } else {
-            // Try to get authenticated user, fallback to first user for demo
-            $user = $request->user() ?? User::first();
+            // Fallback to first user for demo
+            $user = User::first();
         }
         
         if (!$user) {
@@ -69,8 +72,15 @@ class ProfileController extends Controller
         // Log the incoming request for debugging
         \Log::info('Profile update request:', $request->all());
         
-        // For demo purposes, get user by ID from request or use first user
-        $userId = $request->input('user_id') ?? User::first()?->id;
+        // Require user_id to be provided
+        $userId = $request->input('user_id');
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User ID is required'
+            ], 400);
+        }
+        
         $user = User::find($userId);
         
         if (!$user) {

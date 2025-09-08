@@ -137,7 +137,6 @@ export const mockDrivers: Driver[] = [
       license_plate: "DVO-1234",
       vin: "1FUJA6CK18LAF1234",
       vehicle_type: "Dump Truck",
-      type: "Dump Truck",
       capacity: {
         weight: 15000,
         volume: 8,
@@ -262,7 +261,6 @@ export const mockDrivers: Driver[] = [
       license_plate: "TOR-5678",
       vin: "1FDXF86P1MEC98765",
       vehicle_type: "Dump Truck",
-      type: "Dump Truck",
       capacity: {
         weight: 12000,
         volume: 6,
@@ -387,7 +385,6 @@ export const mockDrivers: Driver[] = [
       license_plate: "MAT-9012",
       vin: "1XP5DB9X7YN789012",
       vehicle_type: "Dump Truck",
-      type: "Dump Truck",
       capacity: {
         weight: 18000,
         volume: 10,
@@ -512,7 +509,6 @@ export const mockDrivers: Driver[] = [
       license_plate: "BAN-3456",
       vin: "WD3PE8CC7N5890123",
       vehicle_type: "Dump Truck",
-      type: "Dump Truck",
       capacity: {
         weight: 8000,
         volume: 4,
@@ -631,7 +627,6 @@ export const mockDrivers: Driver[] = [
       license_plate: "ULA-7890",
       vin: "1XKWD49X1LJ345678",
       vehicle_type: "Dump Truck",
-      type: "Dump Truck",
       capacity: {
         weight: 20000,
         volume: 12,

@@ -2,8 +2,58 @@ export type User = {
   id: number;
   name: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
+  user_type: 'admin' | 'driver' | 'client';
+  is_active: boolean;
+  phone?: string;
+  contact_number?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  hourly_rate?: number;
+  age?: number;
+  date_of_birth?: string;
+  profile_picture?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  license_number?: string;
+  license_class?: string;
+  license_expiry?: string;
   created_at: string;
   updated_at: string;
+};
+
+export type CreateUserData = {
+  name?: string;
+  email: string;
+  password: string;
+  first_name?: string;
+  last_name?: string;
+  user_type: 'admin' | 'driver' | 'client';
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  hourly_rate?: number;
+};
+
+export type UpdateUserData = {
+  name?: string;
+  email?: string;
+  password?: string;
+  first_name?: string;
+  last_name?: string;
+  user_type?: 'admin' | 'driver' | 'client';
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  hourly_rate?: number;
 };
 
 export type Task = {
@@ -70,7 +120,8 @@ export type Driver = {
       | "Box Truck"
       | "Van"
       | "Flatbed"
-      | "Refrigerated";
+      | "Refrigerated"
+      | "Dump Truck";
     capacity: {
       weight: number;
       volume: number;
@@ -117,6 +168,8 @@ export type Driver = {
     country: string;
     zip_code?: string;
     current_region?: string;
+    area?: string;
+    province?: string;
   };
   service_areas: string[];
   preferred_routes?: string[];
@@ -185,3 +238,17 @@ export type VehicleType =
   | "Van"
   | "Flatbed"
   | "Refrigerated";
+
+export type Truck = {
+  id: number;
+  truck_number: string;
+  model: string;
+  plate_number: string;
+  color?: string;
+  year?: number;
+  status: 'active' | 'maintenance' | 'inactive';
+  mileage?: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+};
