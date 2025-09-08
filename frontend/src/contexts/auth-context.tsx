@@ -12,7 +12,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
-    name: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     password_confirmation: string
@@ -94,13 +95,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (
-    name: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     password_confirmation: string
   ) => {
     const response = await authAPI.register({
-      name,
+      first_name: firstName,
+      last_name: lastName,
       email,
       password,
       password_confirmation,

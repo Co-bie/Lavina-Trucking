@@ -6,7 +6,8 @@ import { Input } from "../../components/ui/input";
 import { useAuth } from "@/contexts/auth-context";
 
 export function Signup() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,10 +22,11 @@ export function Signup() {
     setLoading(true);
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
       return;
     }
     try {
-      await register(name, email, password, confirmPassword);
+      await register(firstName, lastName, email, password, confirmPassword);
       setLocation("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
@@ -56,14 +58,29 @@ export function Signup() {
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
-              Name
+            <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+              First Name
             </label>
             <Input
               type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              disabled={loading}
+              className="bg-white"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+              Last Name
+            </label>
+            <Input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               required
               disabled={loading}
               className="bg-white"

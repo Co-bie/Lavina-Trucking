@@ -223,7 +223,6 @@ Route::post('/create-test-drivers', function () {
 // Register new user
 Route::post('/register', function (Request $request) {
     $request->validate([
-        'name' => 'required|string|max:255',
         'first_name' => 'required|string|max:255',
         'last_name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
