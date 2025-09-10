@@ -31,8 +31,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AuthLayout from "@/components/shared/auth-layout";
 import { driversAPI } from "@/services/api";
 import type { User } from "@/types/type";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Drivers() {
+  const { user } = useAuth();
+  const isAdmin = user?.user_type === 'admin';
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -128,6 +131,25 @@ export default function Drivers() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e786c] mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading drivers...</p>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <AuthLayout title="Drivers">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
+              <UserIcon className="w-full h-full" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Access Required</h3>
+            <p className="text-gray-600 mb-4">You need administrator privileges to access the drivers management page.</p>
+            <Link href="/dashboard">
+              <Button>Return to Dashboard</Button>
+            </Link>
           </div>
         </div>
       </AuthLayout>

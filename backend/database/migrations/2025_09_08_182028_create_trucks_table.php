@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('color')->nullable();
             $table->year('year')->nullable();
             $table->string('status')->default('active'); // active, maintenance, inactive
+            $table->boolean('is_available')->default(true);
             $table->decimal('mileage', 10, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

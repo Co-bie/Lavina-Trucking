@@ -23,8 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Revert back to original enum values with 'driver' as default
-            $table->enum('user_type', ['admin', 'driver', 'dispatcher', 'manager'])->default('driver')->change();
+            // Revert back to original enum values with 'client' as default (keeping it simpler)
+            $table->enum('user_type', ['admin', 'driver', 'dispatcher', 'manager', 'client'])->default('client')->change();
         });
     }
 };

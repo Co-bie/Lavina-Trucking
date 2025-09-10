@@ -13,6 +13,7 @@ class Truck extends Model
         'color',
         'year',
         'status',
+        'is_available',
         'mileage',
         'notes'
     ];
@@ -20,5 +21,6 @@ class Truck extends Model
     protected $casts = [
         'mileage' => 'decimal:2',
         'year' => 'integer',
+        'is_available' => 'boolean',
     ];
 }

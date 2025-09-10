@@ -3,6 +3,13 @@ import { Button } from "../ui/button";
 import { useLocation } from "wouter";
 import { LogOut, Home, Users, Truck, Calendar, User } from "lucide-react";
 
+interface NavigationItem {
+  path: string;
+  label: string;
+  icon: any;
+  adminOnly?: boolean;
+}
+
 export default function Header() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
@@ -16,10 +23,10 @@ export default function Header() {
     }
   };
 
-  const navigationItems = [
+  const navigationItems: NavigationItem[] = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
-    { path: "/user-management", label: "Users", icon: Users },
-    { path: "/drivers", label: "Drivers", icon: User },
+    { path: "/user-management", label: "Users", icon: Users, adminOnly: true },
+    { path: "/drivers", label: "Drivers", icon: User, adminOnly: true },
     { path: "/trucks", label: "Trucks", icon: Truck },
     { path: "/schedules", label: "Schedules", icon: Calendar },
     { path: "/profile", label: "Profile", icon: User },
@@ -36,7 +43,9 @@ export default function Header() {
         </div>
 
         <nav className="hidden md:flex items-center space-x-6">
-          {navigationItems.map((item) => {
+          {navigationItems
+            .filter(item => !item.adminOnly || user?.user_type === 'admin')
+            .map((item) => {
             const IconComponent = item.icon;
             const isActive = location === item.path;
             return (

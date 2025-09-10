@@ -349,6 +349,17 @@ Route::post('/test-update', function (Request $request) {
     return response()->json(['success' => false, 'message' => 'User not found']);
 });
 
+// Test authentication endpoint
+Route::middleware(['simple.token'])->post('/test-auth', function (Request $request) {
+    $user = $request->user();
+    return response()->json([
+        'success' => true,
+        'message' => 'Authentication working',
+        'user' => $user,
+        'is_admin' => $user->user_type === 'admin'
+    ]);
+});
+
 // Simple authentication middleware for demo
 Route::middleware(['api'])->group(function () {
     // For demo purposes, we'll make these routes accessible without strict auth
@@ -384,6 +395,168 @@ Route::get('/trucks/{id}', function ($id) {
     ]);
 });
 
+// Admin-only truck management endpoints
+Route::middleware(['simple.token'])->group(function () {
+    // Create new truck (admin only)
+    Route::post('/trucks', function (Request $request) {
+        $user = $request->user();
+        
+        if ($user->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin access required.'
+            ], 403);
+        }
+        
+        $request->validate([
+            'truck_number' => 'required|string|unique:trucks',
+            'model' => 'required|string',
+            'plate_number' => 'required|string|unique:trucks',
+            'color' => 'nullable|string',
+            'year' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
+            'status' => 'required|in:active,maintenance,inactive',
+            'is_available' => 'nullable|boolean',
+            'mileage' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string'
+        ]);
+        
+        $truck = Truck::create([
+            'truck_number' => $request->truck_number,
+            'model' => $request->model,
+            'plate_number' => $request->plate_number,
+            'color' => $request->color,
+            'year' => $request->year,
+            'status' => $request->status,
+            'is_available' => $request->is_available ?? true,
+            'mileage' => $request->mileage,
+            'notes' => $request->notes
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Truck created successfully',
+            'data' => $truck
+        ], 201);
+    });
+    
+    // Update truck (admin only)
+    Route::put('/trucks/{id}', function (Request $request, $id) {
+        $user = $request->user();
+        
+        if ($user->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin access required.'
+            ], 403);
+        }
+        
+        $truck = Truck::find($id);
+        
+        if (!$truck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Truck not found'
+            ], 404);
+        }
+        
+        $request->validate([
+            'truck_number' => 'nullable|string|unique:trucks,truck_number,' . $id,
+            'model' => 'nullable|string',
+            'plate_number' => 'nullable|string|unique:trucks,plate_number,' . $id,
+            'color' => 'nullable|string',
+            'year' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
+            'status' => 'nullable|in:active,maintenance,inactive',
+            'is_available' => 'nullable|boolean',
+            'mileage' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string'
+        ]);
+        
+        $truck->update($request->only([
+            'truck_number', 'model', 'plate_number', 'color', 'year', 
+            'status', 'is_available', 'mileage', 'notes'
+        ]));
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Truck updated successfully',
+            'data' => $truck->fresh()
+        ]);
+    });
+    
+    // Delete truck (admin only)
+    Route::delete('/trucks/{id}', function (Request $request, $id) {
+        $user = $request->user();
+        
+        if ($user->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin access required.'
+            ], 403);
+        }
+        
+        $truck = Truck::find($id);
+        
+        if (!$truck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Truck not found'
+            ], 404);
+        }
+        
+        // Check if truck has active trips
+        $activeTrips = Trip::where('truck_id', $id)
+                          ->where('status', '!=', 'completed')
+                          ->count();
+        
+        if ($activeTrips > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete truck with active trips'
+            ], 400);
+        }
+        
+        $truck->delete();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Truck deleted successfully'
+        ]);
+    });
+    
+    // Toggle truck availability (admin only)
+    Route::patch('/trucks/{id}/availability', function (Request $request, $id) {
+        $user = $request->user();
+        
+        if ($user->user_type !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin access required.'
+            ], 403);
+        }
+        
+        $truck = Truck::find($id);
+        
+        if (!$truck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Truck not found'
+            ], 404);
+        }
+        
+        $request->validate([
+            'is_available' => 'required|boolean'
+        ]);
+        
+        $truck->update(['is_available' => $request->is_available]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Truck availability updated successfully',
+            'data' => $truck->fresh()
+        ]);
+    });
+});
+
 // Create sample trucks endpoint
 Route::post('/create-sample-trucks', function () {
     $trucks = [
@@ -394,6 +567,7 @@ Route::post('/create-sample-trucks', function () {
             'color' => 'Blue',
             'year' => 2022,
             'status' => 'active',
+            'is_available' => true,
             'mileage' => 45000.50,
             'notes' => 'Primary delivery truck for Metro Manila routes'
         ],
@@ -404,6 +578,7 @@ Route::post('/create-sample-trucks', function () {
             'color' => 'Red',
             'year' => 2021,
             'status' => 'active',
+            'is_available' => true,
             'mileage' => 67500.25,
             'notes' => 'Long-haul truck for Luzon routes'
         ],
@@ -414,6 +589,7 @@ Route::post('/create-sample-trucks', function () {
             'color' => 'White',
             'year' => 2023,
             'status' => 'maintenance',
+            'is_available' => false,
             'mileage' => 12000.00,
             'notes' => 'Newest addition to fleet, currently in scheduled maintenance'
         ],
@@ -424,6 +600,7 @@ Route::post('/create-sample-trucks', function () {
             'color' => 'Black',
             'year' => 2020,
             'status' => 'active',
+            'is_available' => false,
             'mileage' => 89250.75,
             'notes' => 'Heavy-duty truck for special cargo deliveries'
         ]
@@ -658,13 +835,10 @@ Route::post('/create-sample-trips', function () {
 });
 
 // User Management Routes (Admin only)
-// Simple middleware check for admin users
-Route::middleware(['api'])->group(function () {
+Route::middleware(['simple.token'])->group(function () {
     // Get all users (with filtering)
     Route::get('/admin/users', function (Request $request) {
-        // Simple admin check - in production, use proper middleware
-        $userId = $request->user_id ?? 2; // Default to admin user for testing
-        $currentUser = User::find($userId);
+        $currentUser = $request->user();
         
         if (!$currentUser || $currentUser->user_type !== 'admin') {
             return response()->json([
@@ -703,9 +877,7 @@ Route::middleware(['api'])->group(function () {
     
     // Create new user
     Route::post('/admin/users', function (Request $request) {
-        // Admin check
-        $userId = $request->user_id ?? 2;
-        $currentUser = User::find($userId);
+        $currentUser = $request->user();
         
         if (!$currentUser || $currentUser->user_type !== 'admin') {
             return response()->json([
@@ -753,9 +925,7 @@ Route::middleware(['api'])->group(function () {
     
     // Update user
     Route::put('/admin/users/{id}', function (Request $request, $id) {
-        // Admin check
-        $userId = $request->user_id ?? 2;
-        $currentUser = User::find($userId);
+        $currentUser = $request->user();
         
         if (!$currentUser || $currentUser->user_type !== 'admin') {
             return response()->json([
@@ -801,9 +971,7 @@ Route::middleware(['api'])->group(function () {
     
     // Toggle user active status (block/unblock)
     Route::patch('/admin/users/{id}/toggle-status', function (Request $request, $id) {
-        // Admin check
-        $userId = $request->user_id ?? 2;
-        $currentUser = User::find($userId);
+        $currentUser = $request->user();
         
         if (!$currentUser || $currentUser->user_type !== 'admin') {
             return response()->json([
@@ -824,9 +992,7 @@ Route::middleware(['api'])->group(function () {
     
     // Delete user (soft delete or permanent delete)
     Route::delete('/admin/users/{id}', function (Request $request, $id) {
-        // Admin check
-        $userId = $request->user_id ?? 2;
-        $currentUser = User::find($userId);
+        $currentUser = $request->user();
         
         if (!$currentUser || $currentUser->user_type !== 'admin') {
             return response()->json([

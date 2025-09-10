@@ -27,6 +27,7 @@ export default function Sidebar() {
     {
       name: "Drivers",
       path: "/drivers",
+      adminOnly: true,
     },
     {
       name: "Trucks",

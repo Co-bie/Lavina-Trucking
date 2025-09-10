@@ -248,8 +248,23 @@ export type Truck = {
   color?: string;
   year?: number;
   status: 'active' | 'maintenance' | 'inactive';
+  is_available: boolean;
   mileage?: number;
   notes?: string;
   created_at: string;
   updated_at: string;
 };
+
+export type CreateTruckData = {
+  truck_number: string;
+  model: string;
+  plate_number: string;
+  color?: string;
+  year?: number;
+  status: 'active' | 'maintenance' | 'inactive';
+  is_available?: boolean;
+  mileage?: number;
+  notes?: string;
+};
+
+export type UpdateTruckData = Partial<CreateTruckData>;

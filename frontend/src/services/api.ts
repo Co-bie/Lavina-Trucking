@@ -1,4 +1,4 @@
-import type { LoginData, RegisterData, Task, CreateUserData, UpdateUserData, User, Truck } from "@/types/type";
+import type { LoginData, RegisterData, Task, CreateUserData, UpdateUserData, User, Truck, CreateTruckData, UpdateTruckData } from "@/types/type";
 import axios from "axios";
 
 // Use environment variable for API URL, fallback to localhost for development
@@ -91,6 +91,11 @@ export const driversAPI = {
 export const trucksAPI = {
   getTrucks: () => api.get("/trucks"),
   getTruck: (id: number) => api.get(`/trucks/${id}`),
+  createTruck: (data: CreateTruckData) => api.post("/trucks", data),
+  updateTruck: (id: number, data: UpdateTruckData) => api.put(`/trucks/${id}`, data),
+  deleteTruck: (id: number) => api.delete(`/trucks/${id}`),
+  toggleAvailability: (id: number, is_available: boolean) => 
+    api.patch(`/trucks/${id}/availability`, { is_available }),
 };
 
 export default api;

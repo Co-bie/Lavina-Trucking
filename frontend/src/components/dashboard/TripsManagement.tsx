@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Truck, User, Calendar, MapPin, Package, DollarSign, Clock } from 'lucide-react';
+import { Truck, User, Calendar, MapPin, Package, DollarSign, Clock, ShieldAlert, ChevronDown, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { tripsAPI, type Trip } from '../../lib/api/trips';
 import { driversAPI } from '../../services/api';
+import { useAuth } from '../../contexts/auth-context';
 
 interface Driver {
   id: number;
@@ -22,12 +23,25 @@ interface TripsManagementProps {
 }
 
 const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.user_type === 'admin';
   const [trips, setTrips] = useState<Trip[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigningTrip, setAssigningTrip] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [expandedTrips, setExpandedTrips] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (tripId: number) => {
+    const newExpanded = new Set(expandedTrips);
+    if (newExpanded.has(tripId)) {
+      newExpanded.delete(tripId);
+    } else {
+      newExpanded.add(tripId);
+    }
+    setExpandedTrips(newExpanded);
+  };
 
   useEffect(() => {
     loadTrips();
@@ -145,6 +159,20 @@ const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
     );
   }
 
+  if (!isAdmin) {
+    return (
+      <div className={className}>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <ShieldAlert className="w-16 h-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Access Required</h3>
+            <p className="text-gray-600 text-center">You need administrator privileges to access trip management features.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className={className}>
       {/* Success Message */}
@@ -174,38 +202,79 @@ const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
         </Badge>
       </div>
 
-      <div className="grid gap-6">
-        {trips.map((trip) => (
-          <Card key={trip.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg font-semibold text-blue-600">
-                    {trip.trip_code}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {formatDate(trip.trip_date)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      {formatCurrency(trip.estimated_cost)}
-                    </div>
+      <div className="space-y-2">
+        {trips.map((trip) => {
+          const isExpanded = expandedTrips.has(trip.id);
+          
+          return (
+            <Card key={trip.id} className="hover:shadow-lg transition-shadow">
+              {/* Compact List Header - Always Visible */}
+              <div 
+                className="flex items-center justify-between p-4 cursor-pointer"
+                onClick={() => toggleExpanded(trip.id)}
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center gap-2">
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                    <span className="font-semibold text-blue-600">{trip.trip_code}</span>
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
+                  
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(trip.trip_date)}
+                  </div>
+                  
+                  <div className="font-medium text-gray-800 truncate max-w-[200px]">
+                    {trip.client_name}
+                  </div>
+                  
                   <Badge className={getStatusColor(trip.status)}>
                     {trip.status.toUpperCase()}
                   </Badge>
-                  <Badge className={getCargoTypeColor(trip.cargo_type)}>
-                    {trip.cargo_type.replace('_', ' ').toUpperCase()}
-                  </Badge>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <DollarSign className="h-3 w-3" />
+                  {formatCurrency(trip.estimated_cost)}
                 </div>
               </div>
-            </CardHeader>
 
-            <CardContent>
+              {/* Expanded Details - Conditionally Visible */}
+              {isExpanded && (
+                <div className="border-t">
+                  <CardHeader className="pb-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-blue-600">
+                          {trip.trip_code}
+                        </CardTitle>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(trip.trip_date)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            {formatCurrency(trip.estimated_cost)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Badge className={getStatusColor(trip.status)}>
+                          {trip.status.toUpperCase()}
+                        </Badge>
+                        <Badge className={getCargoTypeColor(trip.cargo_type)}>
+                          {trip.cargo_type.replace('_', ' ').toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Trip Details */}
                 <div className="space-y-4">
@@ -378,8 +447,11 @@ const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
 
         {trips.length === 0 && (
           <Card>
