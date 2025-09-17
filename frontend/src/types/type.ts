@@ -261,7 +261,6 @@ export type CreateTruckData = {
   plate_number: string;
   color?: string;
   year?: number;
-  status: 'active' | 'maintenance' | 'inactive';
   is_available?: boolean;
   mileage?: number;
   notes?: string;

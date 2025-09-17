@@ -13,12 +13,31 @@ export default function Schedules() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user?.id && user?.user_type === 'driver') {
-      loadDriverTrips();
-    } else {
-      setLoading(false);
+    if (user?.id) {
+      if (user.user_type === 'admin') {
+        loadAllTrips();
+      } else if (user.user_type === 'driver') {
+        loadDriverTrips();
+      } else {
+        setLoading(false);
+      }
     }
   }, [user]);
+
+  const loadAllTrips = async () => {
+    try {
+      setLoading(true);
+      const response = await tripsAPI.getTrips();
+      if (response.success) {
+        setTrips(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load all trips:', error);
+      setError('Failed to load scheduled trips');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadDriverTrips = async () => {
     if (!user?.id) return;
@@ -134,7 +153,7 @@ export default function Schedules() {
     <AuthLayout title="Schedules">
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-[#1e786c] mb-8">
-          My Trip Schedule
+          {user?.user_type === 'admin' ? 'All Trip Schedules' : 'My Trip Schedule'}
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -195,9 +214,9 @@ export default function Schedules() {
               <p className="text-red-500 text-center py-8">
                 {error}
               </p>
-            ) : user?.user_type !== 'driver' ? (
+            ) : user?.user_type !== 'driver' && user?.user_type !== 'admin' ? (
               <p className="text-gray-500 text-center py-8">
-                Trip schedules are only available for drivers
+                Trip schedules are only available for drivers and administrators
               </p>
             ) : dailyTrips.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
@@ -233,6 +252,15 @@ export default function Schedules() {
                       <p><strong>Cargo:</strong> {trip.goods_description} • {trip.cargo_weight} tons</p>
                       {trip.truck && (
                         <p><strong>Truck:</strong> {trip.truck.truck_number} ({trip.truck.model})</p>
+                      )}
+                      {user?.user_type === 'admin' && trip.driver && (
+                        <p><strong>Driver:</strong> {trip.driver.first_name} {trip.driver.last_name}</p>
+                      )}
+                      {user?.user_type === 'admin' && trip.driver?.phone && (
+                        <p><strong>Driver Phone:</strong> {trip.driver.phone}</p>
+                      )}
+                      {user?.user_type === 'admin' && !trip.driver && (
+                        <p className="text-amber-600"><strong>Driver:</strong> Not assigned</p>
                       )}
                       <p><strong>Estimated Arrival:</strong> {trip.estimated_arrival_time}</p>
                       {trip.special_instructions && (

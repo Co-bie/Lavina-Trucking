@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
 import {
   Truck as TruckIcon,
   Calendar,
   Gauge,
-  Eye,
   Plus,
   Edit,
-  Trash2,
   EyeOff,
   Power,
   PowerOff,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import AuthLayout from "@/components/shared/auth-layout";
@@ -34,8 +32,19 @@ export default function Trucks() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTruck, setEditingTruck] = useState<Truck | null>(null);
+  const [expandedTrucks, setExpandedTrucks] = useState<Set<number>>(new Set());
   const { user } = useAuth();
   const isAdmin = user?.user_type === 'admin';
+
+  const toggleExpanded = (truckId: number) => {
+    const newExpanded = new Set(expandedTrucks);
+    if (newExpanded.has(truckId)) {
+      newExpanded.delete(truckId);
+    } else {
+      newExpanded.add(truckId);
+    }
+    setExpandedTrucks(newExpanded);
+  };
 
   // Debug logging
   console.log('Current user:', user);
@@ -48,7 +57,6 @@ export default function Trucks() {
     plate_number: '',
     color: '',
     year: new Date().getFullYear(),
-    status: 'active',
     is_available: true,
     mileage: 0,
     notes: ''
@@ -121,19 +129,6 @@ export default function Trucks() {
     }
   };
 
-  const handleDeleteTruck = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this truck?")) return;
-    
-    try {
-      const response = await trucksAPI.deleteTruck(id);
-      if (response.data.success) {
-        setTrucks(trucks.filter(truck => truck.id !== id));
-      }
-    } catch (error) {
-      console.error("Error deleting truck:", error);
-    }
-  };
-
   const handleToggleAvailability = async (id: number, currentAvailability: boolean) => {
     try {
       console.log('Toggling availability for truck:', id, 'from', currentAvailability, 'to', !currentAvailability);
@@ -165,7 +160,6 @@ export default function Trucks() {
       plate_number: truck.plate_number,
       color: truck.color || '',
       year: truck.year || new Date().getFullYear(),
-      status: truck.status,
       is_available: truck.is_available,
       mileage: truck.mileage || 0,
       notes: truck.notes || ''
@@ -180,7 +174,6 @@ export default function Trucks() {
       plate_number: '',
       color: '',
       year: new Date().getFullYear(),
-      status: 'active',
       is_available: true,
       mileage: 0,
       notes: ''
@@ -295,30 +288,15 @@ export default function Trucks() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="maintenance">Maintenance</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="mileage">Mileage</Label>
-                        <Input
-                          id="mileage"
-                          type="number"
-                          min="0"
-                          value={formData.mileage}
-                          onChange={(e) => setFormData({...formData, mileage: parseFloat(e.target.value)})}
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="mileage">Mileage</Label>
+                      <Input
+                        id="mileage"
+                        type="number"
+                        min="0"
+                        value={formData.mileage}
+                        onChange={(e) => setFormData({...formData, mileage: parseFloat(e.target.value)})}
+                      />
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch
@@ -371,156 +349,171 @@ export default function Trucks() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-            {filteredTrucks.map((truck) => (
-              <Card key={truck.id} className={`hover:shadow-lg transition-shadow ${!truck.is_available ? 'opacity-75' : ''}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <TruckIcon className="h-5 w-5 text-[#1e786c]" />
-                      {truck.truck_number}
-                      {!truck.is_available && (
-                        <Badge variant="outline" className="text-xs">
-                          Unavailable
-                        </Badge>
-                      )}
-                    </CardTitle>
+          <>
+            {/* Trucks Header */}
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">Fleet Overview</h2>
+                <p className="text-sm text-gray-600">Click on any truck to view detailed information</p>
+              </div>
+              <Badge variant="outline" className="text-sm">
+                {filteredTrucks.length} {filteredTrucks.length === 1 ? 'Truck' : 'Trucks'}
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+            {filteredTrucks.map((truck) => {
+              const isExpanded = expandedTrucks.has(truck.id);
+              
+              return (
+                <Card key={truck.id} className="hover:shadow-lg transition-shadow">
+                  {/* Compact List Header - Always Visible */}
+                  <div 
+                    className="flex items-center justify-between p-4 cursor-pointer"
+                    onClick={() => toggleExpanded(truck.id)}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2">
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
+                        <TruckIcon className="h-4 w-4 text-[#1e786c]" />
+                        <span className="font-semibold text-[#1e786c]">{truck.truck_number}</span>
+                      </div>
+                      
+                      <div className="font-medium text-gray-800 truncate max-w-[200px]">
+                        {truck.model}
+                      </div>
+                      
+                      <div className="text-sm text-gray-600">
+                        {truck.plate_number}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {!truck.is_available && (
+                          <Badge variant="outline" className="text-xs">
+                            Unavailable
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
                     <div className="flex items-center gap-2">
                       {isAdmin && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleToggleAvailability(truck.id, truck.is_available)}
-                            title={truck.is_available ? "Mark as unavailable" : "Mark as available"}
-                          >
-                            {truck.is_available ? (
-                              <Power className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <PowerOff className="h-4 w-4 text-red-600" />
-                            )}
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleAvailability(truck.id, truck.is_available);
+                          }}
+                          title={truck.is_available ? "Mark as unavailable" : "Mark as available"}
+                        >
+                          {truck.is_available ? (
+                            <Power className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <PowerOff className="h-4 w-4 text-red-600" />
+                          )}
+                        </Button>
                       )}
                     </div>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Model
-                      </label>
-                      <p className="text-sm font-medium text-gray-900">{truck.model}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Plate Number
-                      </label>
-                      <p className="text-sm font-medium text-gray-900">{truck.plate_number}</p>
-                    </div>
-                  </div>
 
-                  {/* Additional Details */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {truck.color && (
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          Color
-                        </label>
-                        <p className="text-sm text-gray-700">{truck.color}</p>
-                      </div>
-                    )}
-                    {truck.year && (
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          Year
-                        </label>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-gray-400" />
-                          <p className="text-sm text-gray-700">{truck.year}</p>
+                  {/* Expanded Details - Conditionally Visible */}
+                  {isExpanded && (
+                    <div className="border-t">
+                      <div className="p-6 space-y-4">
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              Model
+                            </label>
+                            <p className="text-sm font-medium text-gray-900">{truck.model}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              Plate Number
+                            </label>
+                            <p className="text-sm font-medium text-gray-900">{truck.plate_number}</p>
+                          </div>
+                        </div>
+
+                        {/* Additional Details */}
+                        <div className="grid grid-cols-2 gap-4">
+                          {truck.color && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                Color
+                              </label>
+                              <p className="text-sm text-gray-700">{truck.color}</p>
+                            </div>
+                          )}
+                          {truck.year && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                Year
+                              </label>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-gray-400" />
+                                <p className="text-sm text-gray-700">{truck.year}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Mileage */}
+                        {truck.mileage && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              Mileage
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <Gauge className="h-3 w-3 text-gray-400" />
+                              <p className="text-sm text-gray-700">
+                                {truck.mileage.toLocaleString()} miles
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Notes */}
+                        {truck.notes && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              Notes
+                            </label>
+                            <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                              {truck.notes}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="pt-2 border-t">
+                          {isAdmin && (
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openEditDialog(truck)}
+                                className="border-[#cfab3d] text-[#cfab3d] hover:bg-[#cfab3d] hover:text-white"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Mileage */}
-                  {truck.mileage && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Mileage
-                      </label>
-                      <div className="flex items-center gap-1">
-                        <Gauge className="h-3 w-3 text-gray-400" />
-                        <p className="text-sm text-gray-700">
-                          {truck.mileage.toLocaleString()} miles
-                        </p>
-                      </div>
                     </div>
                   )}
-
-                  {/* Notes */}
-                  {truck.notes && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Notes
-                      </label>
-                      <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                        {truck.notes}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="pt-2 border-t">
-                    {isAdmin ? (
-                      <div className="flex gap-2">
-                        <Link href={`/trucks/${truck.id}`} className="flex-1">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full border-[#1e786c] text-[#1e786c] hover:bg-[#1e786c] hover:text-white"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => openEditDialog(truck)}
-                          className="border-[#cfab3d] text-[#cfab3d] hover:bg-[#cfab3d] hover:text-white"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleDeleteTruck(truck.id)}
-                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Link href={`/trucks/${truck.id}`}>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full border-[#1e786c] text-[#1e786c] hover:bg-[#1e786c] hover:text-white"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
+          </>
         )}
         
         {/* Edit Truck Dialog */}
