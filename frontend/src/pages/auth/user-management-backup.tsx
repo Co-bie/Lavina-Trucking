@@ -5,7 +5,6 @@ import {
   Plus, 
   Search, 
   Edit, 
-  Trash2, 
   Shield, 
   ShieldOff
 } from "lucide-react";
@@ -196,26 +195,6 @@ export default function UserManagement({}: UserManagementProps) {
     }
   };
 
-  const handleDeleteUser = async (user: User) => {
-    if (!confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const response = await userManagementAPI.deleteUser(user.id);
-      
-      if (response.data.success) {
-        alert("User deleted successfully!");
-        fetchUsers();
-      } else {
-        alert("Failed to delete user");
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("Failed to delete user");
-    }
-  };
-
   const openEditModal = (user: User) => {
     setSelectedUser(user);
     setFormData({
@@ -394,13 +373,6 @@ export default function UserManagement({}: UserManagementProps) {
                               title={user.is_active ? "Block User" : "Unblock User"}
                             >
                               {user.is_active ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
-                            </Button>
-                            <Button
-                              onClick={() => handleDeleteUser(user)}
-                              size="sm"
-                              variant="destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>

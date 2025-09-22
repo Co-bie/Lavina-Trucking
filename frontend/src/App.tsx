@@ -12,6 +12,8 @@ import DriverProfile from "./pages/auth/driver-profile";
 import Drivers from "./pages/auth/drivers";
 import Trucks from "./pages/auth/trucks";
 import UserManagement from "./pages/auth/user-management";
+import ClientLanding from "./pages/auth/client-landing";
+import RoleDashboardRedirect from "./components/shared/role-dashboard-redirect";
 function App() {
   return (
     <AuthProvider>
@@ -19,9 +21,14 @@ function App() {
         <Route path="/" component={LandingPage} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Signup} />
+        <Route path="/home" component={RoleDashboardRedirect} />
         <Route
           path="/dashboard"
           component={() => <ProtectedRoute component={Home} />}
+        />
+        <Route
+          path="/client-dashboard"
+          component={() => <ProtectedRoute component={ClientLanding} />}
         />
         <Route
           path="/user-management"

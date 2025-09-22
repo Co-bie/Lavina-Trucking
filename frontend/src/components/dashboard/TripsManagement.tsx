@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Truck, User, Calendar, MapPin, Package, DollarSign, Clock, ShieldAlert, ChevronDown, ChevronRight } from 'lucide-react';
+import { Truck, User, Calendar, MapPin, Package, Clock, ShieldAlert, ChevronDown, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { tripsAPI, type Trip } from '../../lib/api/trips';
 import { driversAPI } from '../../services/api';
@@ -238,7 +238,6 @@ const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
                 </div>
                 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <DollarSign className="h-3 w-3" />
                   {formatCurrency(trip.estimated_cost)}
                 </div>
               </div>
@@ -258,7 +257,6 @@ const TripsManagement: React.FC<TripsManagementProps> = ({ className }) => {
                             {formatDate(trip.trip_date)}
                           </div>
                           <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4" />
                             {formatCurrency(trip.estimated_cost)}
                           </div>
                         </div>

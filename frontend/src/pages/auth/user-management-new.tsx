@@ -5,7 +5,6 @@ import {
   Plus, 
   Search, 
   Edit, 
-  Trash2, 
   Shield, 
   ShieldOff
 } from "lucide-react";
@@ -127,21 +126,6 @@ function UserManagementContent({}: UserManagementProps) {
     } catch (error: any) {
       console.error('Error updating user:', error);
       alert(error.response?.data?.message || 'Failed to update user');
-    }
-  };
-
-  const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    
-    try {
-      const response = await userManagementAPI.deleteUser(userId);
-      if (response.data.success) {
-        alert('User deleted successfully!');
-        fetchUsers();
-      }
-    } catch (error: any) {
-      console.error('Error deleting user:', error);
-      alert(error.response?.data?.message || 'Failed to delete user');
     }
   };
 
@@ -339,14 +323,6 @@ function UserManagementContent({}: UserManagementProps) {
                           className={user.is_active ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
                         >
                           {user.is_active ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(user.id)}
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </td>

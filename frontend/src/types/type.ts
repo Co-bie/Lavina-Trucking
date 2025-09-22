@@ -247,7 +247,6 @@ export type Truck = {
   plate_number: string;
   color?: string;
   year?: number;
-  status: 'active' | 'maintenance' | 'inactive';
   is_available: boolean;
   mileage?: number;
   notes?: string;
@@ -267,3 +266,35 @@ export type CreateTruckData = {
 };
 
 export type UpdateTruckData = Partial<CreateTruckData>;
+
+export type MaintenanceRecord = {
+  id: number;
+  truck_id: number;
+  maintenance_type: 'routine' | 'repair' | 'inspection' | 'emergency';
+  description: string;
+  scheduled_date: string;
+  completed_date?: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  cost?: number;
+  mileage_at_service?: number;
+  service_provider?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateMaintenanceData = {
+  truck_id: number;
+  maintenance_type: 'routine' | 'repair' | 'inspection' | 'emergency';
+  description: string;
+  scheduled_date: string;
+  cost?: number;
+  mileage_at_service?: number;
+  service_provider?: string;
+  notes?: string;
+};
+
+export type UpdateMaintenanceData = Partial<CreateMaintenanceData> & {
+  status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  completed_date?: string;
+};

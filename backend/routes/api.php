@@ -379,6 +379,19 @@ Route::get('/trucks', function () {
     ]);
 });
 
+// Get available trucks for booking
+Route::get('/trucks/available', function () {
+    $trucks = Truck::where('status', 'active')
+                   ->where('is_available', true)
+                   ->select('id', 'truck_number', 'model', 'plate_number')
+                   ->get();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $trucks
+    ]);
+});
+
 Route::get('/trucks/{id}', function ($id) {
     $truck = Truck::find($id);
     
@@ -414,7 +427,7 @@ Route::middleware(['simple.token'])->group(function () {
             'plate_number' => 'required|string|unique:trucks',
             'color' => 'nullable|string',
             'year' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
-            'status' => 'required|in:active,maintenance,inactive',
+            'status' => 'nullable|in:active,maintenance,inactive',
             'is_available' => 'nullable|boolean',
             'mileage' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string'
@@ -426,7 +439,7 @@ Route::middleware(['simple.token'])->group(function () {
             'plate_number' => $request->plate_number,
             'color' => $request->color,
             'year' => $request->year,
-            'status' => $request->status,
+            'status' => $request->status ?? 'active',
             'is_available' => $request->is_available ?? true,
             'mileage' => $request->mileage,
             'notes' => $request->notes
@@ -1059,3 +1072,116 @@ Route::delete('/tasks/{id}', function (Request $request, $id) {
     ]);
 });
 
+// Client Booking Routes (require authentication)
+Route::middleware(['simple.token'])->group(function () {
+    // Create trip booking (for clients)
+    Route::post('/bookings', function (Request $request) {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required'
+            ], 401);
+        }
+        
+        // Validate the request
+        $validatedData = $request->validate([
+            'trip_date' => 'required|date|after_or_equal:today',
+            'client_name' => 'required|string|max:255',
+            'client_contact' => 'required|string|max:20',
+            'client_email' => 'nullable|email|max:255',
+            'departure_point' => 'required|string|max:500',
+            'destination' => 'required|string|max:500',
+            'goods_description' => 'required|string',
+            'cargo_weight' => 'nullable|numeric|min:0',
+            'cargo_type' => 'required|string|max:100',
+            'truck_id' => 'required|exists:trucks,id',
+            'estimated_departure_time' => 'nullable|date_format:H:i',
+            'estimated_arrival_time' => 'nullable|date_format:H:i',
+            'special_instructions' => 'nullable|string',
+            'route_notes' => 'nullable|string'
+        ]);
+        
+        // Verify the selected truck is available
+        $selectedTruck = Truck::where('id', $validatedData['truck_id'])
+                             ->where('is_available', true)
+                             ->where('status', 'active')
+                             ->first();
+        
+        if (!$selectedTruck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected truck is not available. Please choose another truck.'
+            ], 400);
+        }
+        
+        // Generate a unique trip code
+        $tripCode = 'TRP-' . date('Y') . '-' . str_pad(Trip::count() + 1, 3, '0', STR_PAD_LEFT);
+        
+        // Create the trip
+        $trip = Trip::create([
+            'trip_code' => $tripCode,
+            'trip_date' => $validatedData['trip_date'],
+            'client_name' => $validatedData['client_name'],
+            'client_contact' => $validatedData['client_contact'],
+            'client_email' => $validatedData['client_email'],
+            'departure_point' => $validatedData['departure_point'],
+            'destination' => $validatedData['destination'],
+            'goods_description' => $validatedData['goods_description'],
+            'cargo_weight' => $validatedData['cargo_weight'],
+            'cargo_type' => $validatedData['cargo_type'],
+            'truck_id' => $validatedData['truck_id'],
+            'status' => 'pending', // Client bookings start as pending
+            'estimated_departure_time' => $validatedData['estimated_departure_time'],
+            'estimated_arrival_time' => $validatedData['estimated_arrival_time'],
+            'special_instructions' => $validatedData['special_instructions'],
+            'route_notes' => $validatedData['route_notes'],
+        ]);
+        
+        // Load the trip with relationships
+        $trip = $trip->load(['truck', 'driver']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Trip booking created successfully',
+            'data' => $trip
+        ], 201);
+    });
+    
+    // Get bookings for current user (clients can see their own bookings)
+    Route::get('/my-bookings', function (Request $request) {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required'
+            ], 401);
+        }
+        
+        // Get trips where client contact or email matches the user
+        $trips = Trip::with(['truck', 'driver'])
+                    ->where(function($query) use ($user) {
+                        $query->where('client_email', $user->email)
+                              ->orWhere('client_contact', $user->phone);
+                    })
+                    ->orderBy('trip_date', 'desc')
+                    ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $trips
+        ]);
+    });
+});
+
+// Maintenance Records Management Routes (require authentication)
+Route::middleware(['simple.token'])->group(function () {
+    Route::get('/maintenance', [App\Http\Controllers\MaintenanceController::class, 'index']);
+    Route::post('/maintenance', [App\Http\Controllers\MaintenanceController::class, 'store']);
+    Route::get('/maintenance/{id}', [App\Http\Controllers\MaintenanceController::class, 'show']);
+    Route::put('/maintenance/{id}', [App\Http\Controllers\MaintenanceController::class, 'update']);
+    Route::delete('/maintenance/{id}', [App\Http\Controllers\MaintenanceController::class, 'destroy']);
+    Route::get('/trucks/{truckId}/maintenance', [App\Http\Controllers\MaintenanceController::class, 'getByTruck']);
+});
