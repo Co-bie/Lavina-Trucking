@@ -35,7 +35,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 export default function Drivers() {
   const { user } = useAuth();
-  const isAdmin = user?.user_type === 'admin';
+  const isAdmin = user?.user_type === "admin";
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -74,8 +74,8 @@ export default function Drivers() {
           bValue = b.email.toLowerCase();
           break;
         case "location":
-          aValue = `${a.city || ''}, ${a.state || ''}`.toLowerCase();
-          bValue = `${b.city || ''}, ${b.state || ''}`.toLowerCase();
+          aValue = `${a.city || ""}, ${a.state || ""}`.toLowerCase();
+          bValue = `${b.city || ""}, ${b.state || ""}`.toLowerCase();
           break;
         default:
           aValue = a.name.toLowerCase();
@@ -101,9 +101,12 @@ export default function Drivers() {
       (driver) =>
         driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         driver.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (driver.phone && driver.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (driver.city && driver.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (driver.state && driver.state.toLowerCase().includes(searchTerm.toLowerCase()))
+        (driver.phone &&
+          driver.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (driver.city &&
+          driver.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (driver.state &&
+          driver.state.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [sortedDrivers, searchTerm]);
 
@@ -145,8 +148,13 @@ export default function Drivers() {
             <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
               <UserIcon className="w-full h-full" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Access Required</h3>
-            <p className="text-gray-600 mb-4">You need administrator privileges to access the drivers management page.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Admin Access Required
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You need administrator privileges to access the drivers management
+              page.
+            </p>
             <Link href="/dashboard">
               <Button>Return to Dashboard</Button>
             </Link>
@@ -170,7 +178,8 @@ export default function Drivers() {
             />
           </div>
           <div className="text-sm text-muted-foreground">
-            {filteredDrivers.length} driver{filteredDrivers.length !== 1 ? 's' : ''} found
+            {filteredDrivers.length} driver
+            {filteredDrivers.length !== 1 ? "s" : ""} found
           </div>
         </div>
 
@@ -240,12 +249,17 @@ export default function Drivers() {
                       <Link href={`/driver/${driver.id}`}>
                         <div className="flex items-center gap-3 cursor-pointer hover:underline">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage 
-                              src={driver.profile_picture ? `http://localhost:8000/storage/profile_pictures/${driver.profile_picture}` : undefined} 
-                              alt={driver.name} 
+                            <AvatarImage
+                              src={
+                                driver.profile_picture
+                                  ? `http://localhost:8000/storage/profile_pictures/${driver.profile_picture}`
+                                  : undefined
+                              }
+                              alt={driver.name}
                             />
                             <AvatarFallback>
-                              {driver.first_name?.[0] || driver.name[0]}{driver.last_name?.[0] || driver.name[1]}
+                              {driver.first_name?.[0] || driver.name[0]}
+                              {driver.last_name?.[0] || driver.name[1]}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col">
@@ -254,7 +268,7 @@ export default function Drivers() {
                             </span>
                             <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Truck className="h-3 w-3" />
-                              License: {driver.license_number || 'Not provided'}
+                              License: {driver.license_number || "Not provided"}
                             </span>
                           </div>
                         </div>
@@ -278,11 +292,11 @@ export default function Drivers() {
                       <div className="flex items-center gap-1 text-sm">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
                         <span>
-                          {driver.address 
+                          {driver.address
                             ? driver.address
-                            : driver.city && driver.state 
-                              ? `${driver.city}, ${driver.state}`
-                              : driver.city || driver.state || 'Not specified'}
+                            : driver.city && driver.state
+                            ? `${driver.city}, ${driver.state}`
+                            : driver.city || driver.state || "Not specified"}
                         </span>
                       </div>
                     </TableCell>

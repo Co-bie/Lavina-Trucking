@@ -12,6 +12,8 @@ import DriverProfile from "./pages/auth/driver-profile";
 import Drivers from "./pages/auth/drivers";
 import Trucks from "./pages/auth/trucks";
 import UserManagement from "./pages/auth/user-management";
+import Booking from "./pages/auth/booking";
+import TransactionHistoryPage from "./pages/auth/transaction-history";
 function App() {
   return (
     <AuthProvider>
@@ -28,7 +30,11 @@ function App() {
           component={() => <ProtectedRoute component={UserManagement} />}
         />
         <Route path="/driver/:id">
-          {(params) => <ProtectedRoute component={() => <DriverProfile params={params} />} />}
+          {(params) => (
+            <ProtectedRoute
+              component={() => <DriverProfile params={params} />}
+            />
+          )}
         </Route>
         <Route
           path="/profile"
@@ -43,8 +49,18 @@ function App() {
           component={() => <ProtectedRoute component={Trucks} />}
         />
         <Route
+          path="/booking"
+          component={() => <ProtectedRoute component={Booking} />}
+        />
+        <Route
           path="/schedules"
           component={() => <ProtectedRoute component={Schedules} />}
+        />
+        <Route
+          path="/transaction-history"
+          component={() => (
+            <ProtectedRoute component={TransactionHistoryPage} />
+          )}
         />
         <Route>
           <h1>404 - Page Not Found</h1>

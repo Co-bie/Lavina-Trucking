@@ -1,4 +1,4 @@
-import type { ScheduleType, Driver } from "@/types/type";
+import type { ScheduleType, Driver, Transaction } from "@/types/type";
 
 export const MockData: ScheduleType[] = [
   {
@@ -349,7 +349,11 @@ export const mockDrivers: Driver[] = [
       status: "approved",
       completed_at: "2023-05-10",
     },
-    specializations: ["Construction Materials", "Sand Transport", "Quick Delivery"],
+    specializations: [
+      "Construction Materials",
+      "Sand Transport",
+      "Quick Delivery",
+    ],
     languages: ["English", "Filipino"],
     payment_methods: ["Bank Transfer"],
     created_at: "2022-03-10T10:30:00Z",
@@ -434,7 +438,12 @@ export const mockDrivers: Driver[] = [
       zip_code: "8000",
       current_region: "Mindanao",
     },
-    service_areas: ["Davao City", "Davao del Sur", "Davao del Norte", "Davao Oriental"],
+    service_areas: [
+      "Davao City",
+      "Davao del Sur",
+      "Davao del Norte",
+      "Davao Oriental",
+    ],
     preferred_routes: ["Matina to Bangkal", "Matina to Ulas"],
     isAvailable: false,
     isOnline: false,
@@ -732,6 +741,147 @@ export const mockDrivers: Driver[] = [
       sms_notifications: false,
       email_notifications: true,
       push_notifications: true,
+    },
+  },
+];
+
+export const mockTransactions: Transaction[] = [
+  {
+    client: {
+      name: "Philip Rizal",
+      phone: "094187247198",
+      id: "98HJDADH",
+    },
+    trip: {
+      departure: {
+        point: "Matina Crossing, Davao City",
+        date: "2025-05-13",
+        time: "10:00 AM",
+      },
+      en_route: {
+        point: "Bangkal, Davao City",
+        date: "2025-05-13",
+        time: "11:00 AM",
+      },
+      destination: {
+        point: "Ulas, Davao City",
+        date: "2025-05-13",
+        time: "1:00 PM",
+      },
+      travel_time_hours: 3,
+    },
+    goods: {
+      item: "Sand",
+      weight: 200,
+      unit: "kg",
+    },
+    driver: {
+      name: "Sam Dela Cruz",
+      id: "DRV-01",
+      truck_number: "LHE 1234",
+    },
+    fuel: {
+      before: "5L",
+      after: "3L",
+    },
+    total: {
+      amount: 5000,
+      currency: "₱",
+      payment_method: "Gcash",
+      status: "paid",
+      remarks: "Gcash Ref No. Paid",
+    },
+  },
+  {
+    client: {
+      name: "John Cruz",
+      phone: "09217894941",
+      id: "75ASIUFSD",
+    },
+    trip: {
+      departure: {
+        point: "Matina Crossing, Davao City",
+        date: "2025-05-13",
+        time: "10:00 AM",
+      },
+      en_route: {
+        point: "Bangkal, Davao City",
+        date: "2025-05-13",
+        time: "11:00 AM",
+      },
+      destination: {
+        point: "Ulas, Davao City",
+        date: "2025-05-13",
+        time: "1:00 PM",
+      },
+      travel_time_hours: 3,
+    },
+    goods: {
+      item: "Metal",
+      weight: 400,
+      unit: "kg",
+    },
+    driver: {
+      name: "Mark Sy",
+      id: "DRV-02",
+      truck_number: "YGV 4128",
+    },
+    fuel: {
+      before: "6L",
+      after: "5L",
+    },
+    total: {
+      amount: 3000,
+      currency: "₱",
+      payment_method: "Cash",
+      status: "unpaid",
+      remarks: "Payment Required",
+    },
+  },
+  {
+    client: {
+      name: "David Lim",
+      phone: "0941892744",
+      id: "12HBDAJI",
+    },
+    trip: {
+      departure: {
+        point: "Matina Crossing, Davao City",
+        date: "2025-05-13",
+        time: "10:00 AM",
+      },
+      en_route: {
+        point: "Bangkal, Davao City",
+        date: "2025-05-13",
+        time: "11:00 AM",
+      },
+      destination: {
+        point: "Ulas, Davao City",
+        date: "2025-05-13",
+        time: "1:00 PM",
+      },
+      travel_time_hours: 3,
+    },
+    goods: {
+      item: "Gravel",
+      weight: 100,
+      unit: "kg",
+    },
+    driver: {
+      name: "Shawn Tan",
+      id: "DRV-03",
+      truck_number: "POU 1283",
+    },
+    fuel: {
+      before: "4L",
+      after: "1.5L",
+    },
+    total: {
+      amount: 2000,
+      currency: "₱",
+      payment_method: "Down payment",
+      status: "unpaid",
+      remarks: "Payment Required",
     },
   },
 ];

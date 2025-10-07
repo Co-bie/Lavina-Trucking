@@ -2,29 +2,37 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   Truck as TruckIcon,
-  Calendar,
-  Gauge,
   Eye,
   Plus,
   Edit,
   Trash2,
   EyeOff,
-  Power,
-  PowerOff,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import AuthLayout from "@/components/shared/auth-layout";
 import { trucksAPI } from "@/services/api";
 import { useAuth } from "@/contexts/auth-context";
 import type { Truck, CreateTruckData } from "@/types/type";
+import { cn } from "@/lib/utils";
 
 export default function Trucks() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
@@ -35,23 +43,18 @@ export default function Trucks() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTruck, setEditingTruck] = useState<Truck | null>(null);
   const { user } = useAuth();
-  const isAdmin = user?.user_type === 'admin';
+  const isAdmin = user?.user_type === "admin";
 
-  // Debug logging
-  console.log('Current user:', user);
-  console.log('Is admin:', isAdmin);
-
-  // Form states
   const [formData, setFormData] = useState<CreateTruckData>({
-    truck_number: '',
-    model: '',
-    plate_number: '',
-    color: '',
+    truck_number: "",
+    model: "",
+    plate_number: "",
+    color: "",
     year: new Date().getFullYear(),
-    status: 'active',
+    status: "active",
     is_available: true,
     mileage: 0,
-    notes: ''
+    notes: "",
   });
 
   useEffect(() => {
@@ -59,11 +62,10 @@ export default function Trucks() {
   }, []);
 
   useEffect(() => {
-    // Filter trucks based on availability toggle
     if (showUnavailable) {
       setFilteredTrucks(trucks);
     } else {
-      setFilteredTrucks(trucks.filter(truck => truck.is_available));
+      setFilteredTrucks(trucks.filter((truck) => truck.is_available));
     }
   }, [trucks, showUnavailable]);
 
@@ -98,61 +100,80 @@ export default function Trucks() {
   const handleEditTruck = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTruck) return;
-    
+
     try {
-      console.log('Updating truck:', editingTruck.id, 'with data:', formData);
+      console.log("Updating truck:", editingTruck.id, "with data:", formData);
       const response = await trucksAPI.updateTruck(editingTruck.id, formData);
-      console.log('Update response:', response);
+      console.log("Update response:", response);
       if (response.data.success) {
-        setTrucks(trucks.map(truck => 
-          truck.id === editingTruck.id ? response.data.data : truck
-        ));
+        setTrucks(
+          trucks.map((truck) =>
+            truck.id === editingTruck.id ? response.data.data : truck
+          )
+        );
         setIsEditDialogOpen(false);
         setEditingTruck(null);
         resetForm();
       } else {
-        console.error('Update failed:', response.data.message);
+        console.error("Update failed:", response.data.message);
       }
     } catch (error) {
       console.error("Error updating truck:", error);
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        console.error('Error response:', (error as any).response?.data);
+      if (typeof error === "object" && error !== null && "response" in error) {
+        console.error("Error response:", error);
       }
     }
   };
 
   const handleDeleteTruck = async (id: number) => {
     if (!confirm("Are you sure you want to delete this truck?")) return;
-    
+
     try {
       const response = await trucksAPI.deleteTruck(id);
       if (response.data.success) {
-        setTrucks(trucks.filter(truck => truck.id !== id));
+        setTrucks(trucks.filter((truck) => truck.id !== id));
       }
     } catch (error) {
       console.error("Error deleting truck:", error);
     }
   };
 
-  const handleToggleAvailability = async (id: number, currentAvailability: boolean) => {
+  const handleToggleAvailability = async (
+    id: number,
+    currentAvailability: boolean
+  ) => {
     try {
-      console.log('Toggling availability for truck:', id, 'from', currentAvailability, 'to', !currentAvailability);
-      const response = await trucksAPI.toggleAvailability(id, !currentAvailability);
-      console.log('Toggle response:', response);
+      console.log(
+        "Toggling availability for truck:",
+        id,
+        "from",
+        currentAvailability,
+        "to",
+        !currentAvailability
+      );
+      const response = await trucksAPI.toggleAvailability(
+        id,
+        !currentAvailability
+      );
+      console.log("Toggle response:", response);
       if (response.data.success) {
-        setTrucks(trucks.map(truck => 
-          truck.id === id ? { ...truck, is_available: !currentAvailability } : truck
-        ));
+        setTrucks(
+          trucks.map((truck) =>
+            truck.id === id
+              ? { ...truck, is_available: !currentAvailability }
+              : truck
+          )
+        );
       } else {
-        console.error('Toggle failed:', response.data.message);
+        console.error("Toggle failed:", response.data.message);
       }
     } catch (error) {
       console.error("Error toggling availability:", error);
       if (error instanceof Error) {
-        console.error('Error message:', error.message);
+        console.error("Error message:", error.message);
       }
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        console.error('Error response:', (error as any).response?.data);
+      if (typeof error === "object" && error !== null && "response" in error) {
+        console.error("Error response:", error);
       }
     }
   };
@@ -163,27 +184,27 @@ export default function Trucks() {
       truck_number: truck.truck_number,
       model: truck.model,
       plate_number: truck.plate_number,
-      color: truck.color || '',
+      color: truck.color || "",
       year: truck.year || new Date().getFullYear(),
       status: truck.status,
       is_available: truck.is_available,
       mileage: truck.mileage || 0,
-      notes: truck.notes || ''
+      notes: truck.notes || "",
     });
     setIsEditDialogOpen(true);
   };
 
   const resetForm = () => {
     setFormData({
-      truck_number: '',
-      model: '',
-      plate_number: '',
-      color: '',
+      truck_number: "",
+      model: "",
+      plate_number: "",
+      color: "",
       year: new Date().getFullYear(),
-      status: 'active',
+      status: "active",
       is_available: true,
       mileage: 0,
-      notes: ''
+      notes: "",
     });
   };
 
@@ -203,37 +224,39 @@ export default function Trucks() {
   return (
     <AuthLayout title="Fleet Management">
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Fleet Management</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Fleet Management
+            </h1>
             <p className="text-gray-600">Manage and monitor your truck fleet</p>
           </div>
           <div className="flex items-center gap-4">
-            {/* Show/Hide Unavailable Toggle */}
             <div className="flex items-center gap-2">
               <Switch
                 checked={showUnavailable}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowUnavailable(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setShowUnavailable(e.target.checked)
+                }
               />
               <span className="text-sm text-gray-700">
                 Show Unavailable Trucks
               </span>
-              {!showUnavailable && (
-                <EyeOff className="h-4 w-4 text-gray-500" />
-              )}
+              {!showUnavailable && <EyeOff className="h-4 w-4 text-gray-500" />}
             </div>
-            
+
             <div className="flex items-center gap-2">
               <TruckIcon className="h-5 w-5 text-[#1e786c]" />
               <span className="text-sm font-medium text-gray-700">
                 {filteredTrucks.length} of {trucks.length} Trucks
               </span>
             </div>
-            
-            {/* Admin Only - Add Truck Button */}
+
             {isAdmin && (
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <Dialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+              >
                 <DialogTrigger asChild>
                   <Button className="bg-[#1e786c] hover:bg-[#cfab3d] text-white">
                     <Plus className="h-4 w-4 mr-2" />
@@ -251,7 +274,12 @@ export default function Trucks() {
                         <Input
                           id="truck_number"
                           value={formData.truck_number}
-                          onChange={(e) => setFormData({...formData, truck_number: e.target.value})}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              truck_number: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -260,7 +288,12 @@ export default function Trucks() {
                         <Input
                           id="plate_number"
                           value={formData.plate_number}
-                          onChange={(e) => setFormData({...formData, plate_number: e.target.value})}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              plate_number: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -270,7 +303,9 @@ export default function Trucks() {
                       <Input
                         id="model"
                         value={formData.model}
-                        onChange={(e) => setFormData({...formData, model: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, model: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -280,7 +315,9 @@ export default function Trucks() {
                         <Input
                           id="color"
                           value={formData.color}
-                          onChange={(e) => setFormData({...formData, color: e.target.value})}
+                          onChange={(e) =>
+                            setFormData({ ...formData, color: e.target.value })
+                          }
                         />
                       </div>
                       <div>
@@ -291,20 +328,38 @@ export default function Trucks() {
                           min="1990"
                           max={new Date().getFullYear() + 1}
                           value={formData.year}
-                          onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              year: parseInt(e.target.value),
+                            })
+                          }
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="status">Status</Label>
-                        <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value: string) =>
+                            setFormData({
+                              ...formData,
+                              status: value as
+                                | "active"
+                                | "maintenance"
+                                | "inactive",
+                            })
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="maintenance">Maintenance</SelectItem>
+                            <SelectItem value="maintenance">
+                              Maintenance
+                            </SelectItem>
                             <SelectItem value="inactive">Inactive</SelectItem>
                           </SelectContent>
                         </Select>
@@ -316,14 +371,24 @@ export default function Trucks() {
                           type="number"
                           min="0"
                           value={formData.mileage}
-                          onChange={(e) => setFormData({...formData, mileage: parseFloat(e.target.value)})}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              mileage: parseFloat(e.target.value),
+                            })
+                          }
                         />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={formData.is_available}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, is_available: e.target.checked})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setFormData({
+                            ...formData,
+                            is_available: e.target.checked,
+                          })
+                        }
                       />
                       <Label>Available for trips</Label>
                     </div>
@@ -332,17 +397,22 @@ export default function Trucks() {
                       <Textarea
                         id="notes"
                         value={formData.notes}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, notes: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
                         rows={3}
                       />
                     </div>
                     <div className="flex gap-2 pt-4">
-                      <Button type="submit" className="flex-1 bg-[#1e786c] hover:bg-[#cfab3d]">
+                      <Button
+                        type="submit"
+                        className="flex-1 bg-[#1e786c] hover:bg-[#cfab3d]"
+                      >
                         Create Truck
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => setIsCreateDialogOpen(false)}
                         className="flex-1"
                       >
@@ -356,7 +426,6 @@ export default function Trucks() {
           </div>
         </div>
 
-        {/* Trucks Grid */}
         {filteredTrucks.length === 0 ? (
           <div className="text-center py-12">
             <TruckIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -364,166 +433,94 @@ export default function Trucks() {
               {trucks.length === 0 ? "No Trucks Found" : "No Available Trucks"}
             </h3>
             <p className="text-gray-600">
-              {trucks.length === 0 
-                ? "There are no trucks in your fleet yet." 
-                : "All trucks are currently unavailable. Toggle to show unavailable trucks."
-              }
+              {trucks.length === 0
+                ? "There are no trucks in your fleet yet."
+                : "All trucks are currently unavailable. Toggle to show unavailable trucks."}
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-            {filteredTrucks.map((truck) => (
-              <Card key={truck.id} className={`hover:shadow-lg transition-shadow ${!truck.is_available ? 'opacity-75' : ''}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <TruckIcon className="h-5 w-5 text-[#1e786c]" />
-                      {truck.truck_number}
-                      {!truck.is_available && (
-                        <Badge variant="outline" className="text-xs">
-                          Unavailable
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      {isAdmin && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleToggleAvailability(truck.id, truck.is_available)}
-                            title={truck.is_available ? "Mark as unavailable" : "Mark as available"}
-                          >
-                            {truck.is_available ? (
-                              <Power className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <PowerOff className="h-4 w-4 text-red-600" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Model
-                      </label>
-                      <p className="text-sm font-medium text-gray-900">{truck.model}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Plate Number
-                      </label>
-                      <p className="text-sm font-medium text-gray-900">{truck.plate_number}</p>
-                    </div>
-                  </div>
-
-                  {/* Additional Details */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {truck.color && (
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          Color
-                        </label>
-                        <p className="text-sm text-gray-700">{truck.color}</p>
-                      </div>
-                    )}
-                    {truck.year && (
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          Year
-                        </label>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-gray-400" />
-                          <p className="text-sm text-gray-700">{truck.year}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mileage */}
-                  {truck.mileage && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Mileage
-                      </label>
-                      <div className="flex items-center gap-1">
-                        <Gauge className="h-3 w-3 text-gray-400" />
-                        <p className="text-sm text-gray-700">
-                          {truck.mileage.toLocaleString()} miles
-                        </p>
-                      </div>
-                    </div>
+          <>
+            <div className="bg-white shadow rounded-md overflow-hidden space-y-2">
+              {filteredTrucks.map((truck) => (
+                <div
+                  key={truck.id}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 border",
+                    !truck.is_available && "bg-gray-50 opacity-80"
                   )}
-
-                  {/* Notes */}
-                  {truck.notes && (
+                >
+                  <div className="flex items-center gap-3">
+                    <TruckIcon className="h-5 w-5 text-[#1e786c]" />
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Notes
-                      </label>
-                      <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                        {truck.notes}
+                      <p className="font-semibold text-gray-800">
+                        {truck.truck_number}{" "}
+                        {!truck.is_available && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            Unavailable
+                          </Badge>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {truck.model} • {truck.plate_number}
                       </p>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Actions */}
-                  <div className="pt-2 border-t">
-                    {isAdmin ? (
-                      <div className="flex gap-2">
-                        <Link href={`/trucks/${truck.id}`} className="flex-1">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full border-[#1e786c] text-[#1e786c] hover:bg-[#1e786c] hover:text-white"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <>
+                        <Switch
+                          checked={truck.is_available}
+                          onChange={() =>
+                            handleToggleAvailability(
+                              truck.id,
+                              truck.is_available
+                            )
+                          }
+                          className={cn(
+                            truck.is_available
+                              ? "data-[state=checked]:bg-green-600"
+                              : "data-[state=unchecked]:bg-red-600"
+                          )}
+                        />
+
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => openEditDialog(truck)}
                           className="border-[#cfab3d] text-[#cfab3d] hover:bg-[#cfab3d] hover:text-white"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleDeleteTruck(truck.id)}
                           className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </div>
-                    ) : (
-                      <Link href={`/trucks/${truck.id}`}>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full border-[#1e786c] text-[#1e786c] hover:bg-[#1e786c] hover:text-white"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                      </Link>
+                      </>
                     )}
+
+                    <Link href={`/trucks/${truck.id}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#1e786c] text-[#1e786c] hover:bg-[#1e786c] hover:text-white"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </Link>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
-        
-        {/* Edit Truck Dialog */}
+
         {isAdmin && (
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent className="max-w-md bg-white">
@@ -537,7 +534,12 @@ export default function Trucks() {
                     <Input
                       id="edit_truck_number"
                       value={formData.truck_number}
-                      onChange={(e) => setFormData({...formData, truck_number: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          truck_number: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
@@ -546,7 +548,12 @@ export default function Trucks() {
                     <Input
                       id="edit_plate_number"
                       value={formData.plate_number}
-                      onChange={(e) => setFormData({...formData, plate_number: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          plate_number: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
@@ -556,7 +563,9 @@ export default function Trucks() {
                   <Input
                     id="edit_model"
                     value={formData.model}
-                    onChange={(e) => setFormData({...formData, model: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, model: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -566,7 +575,9 @@ export default function Trucks() {
                     <Input
                       id="edit_color"
                       value={formData.color}
-                      onChange={(e) => setFormData({...formData, color: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, color: e.target.value })
+                      }
                     />
                   </div>
                   <div>
@@ -577,7 +588,12 @@ export default function Trucks() {
                       min="1990"
                       max={new Date().getFullYear() + 1}
                       value={formData.year}
-                      onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          year: parseInt(e.target.value),
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -588,7 +604,12 @@ export default function Trucks() {
                     type="number"
                     min="0"
                     value={formData.mileage}
-                    onChange={(e) => setFormData({...formData, mileage: parseFloat(e.target.value)})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        mileage: parseFloat(e.target.value),
+                      })
+                    }
                   />
                 </div>
                 <div>
@@ -596,17 +617,22 @@ export default function Trucks() {
                   <Textarea
                     id="edit_notes"
                     value={formData.notes}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, notes: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
                     rows={3}
                   />
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1 bg-[#1e786c] hover:bg-[#cfab3d]">
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-[#1e786c] hover:bg-[#cfab3d]"
+                  >
                     Update Truck
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => {
                       setIsEditDialogOpen(false);
                       setEditingTruck(null);

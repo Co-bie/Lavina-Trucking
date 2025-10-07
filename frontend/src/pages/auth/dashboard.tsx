@@ -18,7 +18,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -126,7 +126,7 @@ export default function Dashboard() {
         </div>
 
         {error && <div className="mb-4 text-red-600">{error}</div>}
-        <div className="flex justify-between items-center mb-6">
+        {/* <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-800">My Tasks</h3>
           <Button onClick={() => setShowForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
@@ -265,7 +265,7 @@ export default function Dashboard() {
               </div>
             ))
           )}
-        </div>
+        </div> */}
 
         {/* Trips Management Section */}
         <TripsManagement className="mt-8" />

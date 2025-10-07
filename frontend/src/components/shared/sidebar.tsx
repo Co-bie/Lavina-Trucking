@@ -7,6 +7,7 @@ interface SidebarItem {
   name: string;
   path: string;
   adminOnly?: boolean;
+  clientOnly?: boolean;
 }
 
 export default function Sidebar() {
@@ -25,6 +26,10 @@ export default function Sidebar() {
       adminOnly: true,
     },
     {
+      name: "Transaction History",
+      path: "/transaction-history",
+    },
+    {
       name: "Drivers",
       path: "/drivers",
       adminOnly: true,
@@ -32,6 +37,11 @@ export default function Sidebar() {
     {
       name: "Trucks",
       path: "/trucks",
+    },
+    {
+      name: "Booking",
+      path: "/booking",
+      clientOnly: true,
     },
     {
       name: "Schedules",
@@ -44,8 +54,11 @@ export default function Sidebar() {
   ];
 
   // Filter nav items based on user role
-  const filteredNavItems = navItems.filter(item => {
-    if (item.adminOnly && user?.user_type !== 'admin') {
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.adminOnly && user?.user_type !== "admin") {
+      return false;
+    }
+    if (item.clientOnly && user?.user_type !== "client") {
       return false;
     }
     return true;

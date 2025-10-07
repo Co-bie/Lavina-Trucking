@@ -13,7 +13,7 @@ export default function Schedules() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user?.id && user?.user_type === 'driver') {
+    if (user?.id && user?.user_type === "driver") {
       loadDriverTrips();
     } else {
       setLoading(false);
@@ -22,7 +22,7 @@ export default function Schedules() {
 
   const loadDriverTrips = async () => {
     if (!user?.id) return;
-    
+
     try {
       setLoading(true);
       const response = await tripsAPI.getDriverTrips(user.id);
@@ -30,8 +30,8 @@ export default function Schedules() {
         setTrips(response.data);
       }
     } catch (error) {
-      console.error('Failed to load driver trips:', error);
-      setError('Failed to load your scheduled trips');
+      console.error("Failed to load driver trips:", error);
+      setError("Failed to load your scheduled trips");
     } finally {
       setLoading(false);
     }
@@ -77,18 +77,24 @@ export default function Schedules() {
   );
 
   // Get days that have trips in the current month
-  const daysWithTrips = trips.filter((trip) =>
-    isSameMonth(new Date(trip.trip_date), currentMonth)
-  ).map((trip) => new Date(trip.trip_date).getDate());
+  const daysWithTrips = trips
+    .filter((trip) => isSameMonth(new Date(trip.trip_date), currentMonth))
+    .map((trip) => new Date(trip.trip_date).getDate());
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'assigned': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "assigned":
+        return "bg-blue-100 text-blue-800";
+      case "in_progress":
+        return "bg-green-100 text-green-800";
+      case "completed":
+        return "bg-gray-100 text-gray-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -192,10 +198,8 @@ export default function Schedules() {
                 Loading your scheduled trips...
               </p>
             ) : error ? (
-              <p className="text-red-500 text-center py-8">
-                {error}
-              </p>
-            ) : user?.user_type !== 'driver' ? (
+              <p className="text-red-500 text-center py-8">{error}</p>
+            ) : user?.user_type !== "driver" ? (
               <p className="text-gray-500 text-center py-8">
                 Trip schedules are only available for drivers
               </p>
@@ -215,7 +219,7 @@ export default function Schedules() {
                         {trip.departure_point} → {trip.destination}
                       </h3>
                       <div className="flex gap-2">
-                        <Badge 
+                        <Badge
                           className={`text-xs ${getStatusColor(trip.status)}`}
                         >
                           {trip.status.toUpperCase()}
@@ -225,19 +229,35 @@ export default function Schedules() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Trip Code:</strong> {trip.trip_code}</p>
-                      <p><strong>Client:</strong> {trip.client_name}</p>
-                      <p><strong>Contact:</strong> {trip.client_contact}</p>
-                      <p><strong>Cargo:</strong> {trip.goods_description} • {trip.cargo_weight} tons</p>
+                      <p>
+                        <strong>Trip Code:</strong> {trip.trip_code}
+                      </p>
+                      <p>
+                        <strong>Client:</strong> {trip.client_name}
+                      </p>
+                      <p>
+                        <strong>Contact:</strong> {trip.client_contact}
+                      </p>
+                      <p>
+                        <strong>Cargo:</strong> {trip.goods_description} •{" "}
+                        {trip.cargo_weight} tons
+                      </p>
                       {trip.truck && (
-                        <p><strong>Truck:</strong> {trip.truck.truck_number} ({trip.truck.model})</p>
+                        <p>
+                          <strong>Truck:</strong> {trip.truck.truck_number} (
+                          {trip.truck.model})
+                        </p>
                       )}
-                      <p><strong>Estimated Arrival:</strong> {trip.estimated_arrival_time}</p>
+                      <p>
+                        <strong>Estimated Arrival:</strong>{" "}
+                        {trip.estimated_arrival_time}
+                      </p>
                       {trip.special_instructions && (
                         <p className="italic text-orange-600">
-                          <strong>Special Instructions:</strong> {trip.special_instructions}
+                          <strong>Special Instructions:</strong>{" "}
+                          {trip.special_instructions}
                         </p>
                       )}
                     </div>

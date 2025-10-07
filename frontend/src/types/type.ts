@@ -4,7 +4,7 @@ export type User = {
   email: string;
   first_name?: string;
   last_name?: string;
-  user_type: 'admin' | 'driver' | 'client';
+  user_type: "admin" | "driver" | "client";
   is_active: boolean;
   phone?: string;
   contact_number?: string;
@@ -32,7 +32,7 @@ export type CreateUserData = {
   password: string;
   first_name?: string;
   last_name?: string;
-  user_type: 'admin' | 'driver' | 'client';
+  user_type: "admin" | "driver" | "client";
   phone?: string;
   address?: string;
   city?: string;
@@ -47,7 +47,7 @@ export type UpdateUserData = {
   password?: string;
   first_name?: string;
   last_name?: string;
-  user_type?: 'admin' | 'driver' | 'client';
+  user_type?: "admin" | "driver" | "client";
   phone?: string;
   address?: string;
   city?: string;
@@ -247,7 +247,7 @@ export type Truck = {
   plate_number: string;
   color?: string;
   year?: number;
-  status: 'active' | 'maintenance' | 'inactive';
+  status: "active" | "maintenance" | "inactive";
   is_available: boolean;
   mileage?: number;
   notes?: string;
@@ -261,10 +261,51 @@ export type CreateTruckData = {
   plate_number: string;
   color?: string;
   year?: number;
-  status: 'active' | 'maintenance' | 'inactive';
+  status: "active" | "maintenance" | "inactive";
   is_available?: boolean;
   mileage?: number;
   notes?: string;
 };
 
 export type UpdateTruckData = Partial<CreateTruckData>;
+
+export type Transaction = {
+  client: {
+    name: string;
+    phone: string;
+    id: string;
+  };
+  trip: {
+    departure: TripStop;
+    en_route: TripStop;
+    destination: TripStop;
+    travel_time_hours: number;
+  };
+  goods: {
+    item: string;
+    weight: number;
+    unit: "kg" | "ton" | string;
+  };
+  driver: {
+    name: string;
+    id: string;
+    truck_number: string;
+  };
+  fuel: {
+    before: string;
+    after: string;
+  };
+  total: {
+    amount: number;
+    currency: string;
+    payment_method: string;
+    status: "paid" | "unpaid";
+    remarks?: string;
+  };
+};
+
+type TripStop = {
+  point: string;
+  date: string;
+  time: string;
+};
