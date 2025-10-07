@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Truck extends Model
 {
@@ -23,4 +24,12 @@ class Truck extends Model
         'year' => 'integer',
         'is_available' => 'boolean',
     ];
+
+    /**
+     * Get the maintenance records for the truck.
+     */
+    public function maintenanceRecords(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class);
+    }
 }

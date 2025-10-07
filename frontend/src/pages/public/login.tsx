@@ -49,7 +49,7 @@ export function Login() {
 
     try {
       await login(email, password);
-      setLocation("/dashboard");
+      setLocation("/home");
     } catch (err: any) {
       // Extract error information from the error response
       if (err.message) {

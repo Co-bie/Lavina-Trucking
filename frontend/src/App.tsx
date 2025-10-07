@@ -21,9 +21,14 @@ function App() {
         <Route path="/" component={LandingPage} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Signup} />
+        <Route path="/home" component={RoleDashboardRedirect} />
         <Route
           path="/dashboard"
           component={() => <ProtectedRoute component={Home} />}
+        />
+        <Route
+          path="/client-dashboard"
+          component={() => <ProtectedRoute component={ClientLanding} />}
         />
         <Route
           path="/user-management"
