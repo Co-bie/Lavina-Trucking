@@ -8,6 +8,7 @@ interface SidebarItem {
   path: string;
   adminOnly?: boolean;
   clientOnly?: boolean;
+  driverOnly?: boolean;
 }
 
 export default function Sidebar() {
@@ -24,6 +25,16 @@ export default function Sidebar() {
       name: "User Management",
       path: "/user-management",
       adminOnly: true,
+    },
+    {
+      name: "Fuel Logs",
+      path: "/fuel-logs",
+      driverOnly: true,
+    },
+    {
+      name: "Trip Logs",
+      path: "/trip-logs",
+      driverOnly: true,
     },
     {
       name: "Transaction History",
@@ -44,6 +55,11 @@ export default function Sidebar() {
       clientOnly: true,
     },
     {
+      name: "Bookings",
+      path: "/bookings",
+      adminOnly: true,
+    },
+    {
       name: "Schedules",
       path: "/schedules",
     },
@@ -59,6 +75,9 @@ export default function Sidebar() {
       return false;
     }
     if (item.clientOnly && user?.user_type !== "client") {
+      return false;
+    }
+    if (item.driverOnly && user?.user_type !== "driver") {
       return false;
     }
     return true;

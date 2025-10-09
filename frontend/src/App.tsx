@@ -14,6 +14,11 @@ import Trucks from "./pages/auth/trucks";
 import UserManagement from "./pages/auth/user-management";
 import Booking from "./pages/auth/booking";
 import TransactionHistoryPage from "./pages/auth/transaction-history";
+import FuelLogsPage from "./pages/auth/fuel-logs";
+import TripLogsPage from "./pages/auth/trip-logs";
+import PaymentsPage from "./pages/auth/payments";
+import ReceiptPage from "./pages/auth/receipt";
+import Bookings from "./pages/auth/bookings";
 function App() {
   return (
     <AuthProvider>
@@ -21,14 +26,26 @@ function App() {
         <Route path="/" component={LandingPage} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Signup} />
-        <Route path="/home" component={RoleDashboardRedirect} />
         <Route
           path="/dashboard"
           component={() => <ProtectedRoute component={Home} />}
         />
         <Route
-          path="/client-dashboard"
-          component={() => <ProtectedRoute component={ClientLanding} />}
+          path="/fuel-logs"
+          component={() => <ProtectedRoute component={FuelLogsPage} />}
+        />
+        <Route
+          path="/fuel-logs"
+          component={() => <ProtectedRoute component={FuelLogsPage} />}
+        />
+        <Route
+          path="/payments"
+          component={() => <ProtectedRoute component={PaymentsPage} />}
+        />
+
+        <Route
+          path="/trip-logs"
+          component={() => <ProtectedRoute component={TripLogsPage} />}
         />
         <Route
           path="/user-management"
@@ -39,6 +56,11 @@ function App() {
             <ProtectedRoute
               component={() => <DriverProfile params={params} />}
             />
+          )}
+        </Route>
+        <Route path="/receipt/:id">
+          {(params) => (
+            <ProtectedRoute component={() => <ReceiptPage params={params} />} />
           )}
         </Route>
         <Route
@@ -56,6 +78,10 @@ function App() {
         <Route
           path="/booking"
           component={() => <ProtectedRoute component={Booking} />}
+        />
+        <Route
+          path="/bookings"
+          component={() => <ProtectedRoute component={Bookings} />}
         />
         <Route
           path="/schedules"

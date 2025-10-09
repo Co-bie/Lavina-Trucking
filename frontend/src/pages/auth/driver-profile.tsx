@@ -7,8 +7,11 @@ import {
   MapPin,
   Calendar,
   FileText,
+  Upload,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +25,9 @@ type DriverProfileProps = {
 export default function DriverProfile({ params }: DriverProfileProps) {
   const [driver, setDriver] = useState<DriverType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [licenseImage] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [licenseImage, setLicenseImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDriver();
@@ -39,6 +44,37 @@ export default function DriverProfile({ params }: DriverProfileProps) {
       console.error("Error fetching driver:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!driver) return;
+    
+    try {
+      setSaving(true);
+      const response = await driversAPI.updateDriver(driver.id, driver);
+      if (response.data.success) {
+        setDriver(response.data.data);
+        setIsEditing(false);
+        alert("Driver profile updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating driver:", error);
+      alert("Failed to update driver profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof DriverType, value: any) => {
+    if (!driver) return;
+    setDriver({ ...driver, [field]: value });
+  };
+
+  const handleLicenseUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = URL.createObjectURL(e.target.files[0]);
+      setLicenseImage(file);
     }
   };
 
@@ -87,6 +123,16 @@ export default function DriverProfile({ params }: DriverProfileProps) {
             </Button>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Driver Profile</h1>
+          <div className="ml-auto">
+            <Button
+              variant={isEditing ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              {isEditing ? "Cancel" : <Edit className="mr-2 h-4 w-4" />}
+              {isEditing ? "Cancel" : "Edit Profile"}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -139,38 +185,67 @@ export default function DriverProfile({ params }: DriverProfileProps) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border">
-                      {driver.name}
-                    </div>
+                    {isEditing ? (
+                      <Input value={driver.name} disabled />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border">
+                        {driver.name}
+                      </div>
+                    )}
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Age
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border">
-                      {driver.age || 'Not provided'}
-                    </div>
+                    {isEditing ? (
+                      <Input 
+                        type="number" 
+                        value={driver.age || ''} 
+                        placeholder="Enter age"
+                        onChange={(e) => handleInputChange('age', parseInt(e.target.value) || null)}
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border">
+                        {driver.age || 'Not provided'}
+                      </div>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Contact No.
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      {driver.phone || 'Not provided'}
-                    </div>
+                    {isEditing ? (
+                      <Input 
+                        value={driver.phone || ''} 
+                        placeholder="Enter phone number"
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        {driver.phone || 'Not provided'}
+                      </div>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Address
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      {driver.address || 'Not provided'}
-                    </div>
+                    {isEditing ? (
+                      <Input 
+                        value={driver.address || ''} 
+                        placeholder="Enter address"
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-500" />
+                        {driver.address || 'Not provided'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -190,18 +265,34 @@ export default function DriverProfile({ params }: DriverProfileProps) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name of Emergency Contact
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border">
-                      {driver.emergency_contact_name || 'Not provided'}
-                    </div>
+                    {isEditing ? (
+                      <Input 
+                        value={driver.emergency_contact_name || ''} 
+                        placeholder="Enter emergency contact name"
+                        onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border">
+                        {driver.emergency_contact_name || 'Not provided'}
+                      </div>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       No. of Emergency Contact
                     </label>
-                    <div className="p-2 bg-gray-50 rounded border">
-                      {driver.emergency_contact_phone || 'Not provided'}
-                    </div>
+                    {isEditing ? (
+                      <Input 
+                        value={driver.emergency_contact_phone || ''} 
+                        placeholder="Enter emergency contact phone"
+                        onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 rounded border">
+                        {driver.emergency_contact_phone || 'Not provided'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -222,28 +313,48 @@ export default function DriverProfile({ params }: DriverProfileProps) {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         License Number
                       </label>
-                      <div className="p-2 bg-gray-50 rounded border">
-                        {driver.license_number || 'Not provided'}
-                      </div>
+                      {isEditing ? (
+                        <Input 
+                          value={driver.license_number || ''} 
+                          placeholder="Enter license number"
+                          onChange={(e) => handleInputChange('license_number', e.target.value)}
+                        />
+                      ) : (
+                        <div className="p-2 bg-gray-50 rounded border">
+                          {driver.license_number || 'Not provided'}
+                        </div>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         License Class
                       </label>
-                      <div className="p-2 bg-gray-50 rounded border">
-                        {driver.license_class || 'Not provided'}
-                      </div>
+                      {isEditing ? (
+                        <Input 
+                          value={driver.license_class || ''} 
+                          placeholder="Enter license class"
+                          onChange={(e) => handleInputChange('license_class', e.target.value)}
+                        />
+                      ) : (
+                        <div className="p-2 bg-gray-50 rounded border">
+                          {driver.license_class || 'Not provided'}
+                        </div>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Expiry Date
                       </label>
-                      <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        {driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : 'Not provided'}
-                      </div>
+                      {isEditing ? (
+                        <Input type="date" value={driver.license_expiry || ''} />
+                      ) : (
+                        <div className="p-2 bg-gray-50 rounded border flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-500" />
+                          {driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : 'Not provided'}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -259,11 +370,34 @@ export default function DriverProfile({ params }: DriverProfileProps) {
                             alt="Driver's License" 
                             className="max-w-full h-32 object-contain mx-auto"
                           />
+                          {isEditing && (
+                            <Button variant="outline" size="sm" onClick={() => setLicenseImage(null)}>
+                              Remove
+                            </Button>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-2">
                           <div className="text-gray-400 text-sm">Picture of Driver's License</div>
-                          <div className="text-gray-400 text-xs">No image uploaded</div>
+                          {isEditing && (
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLicenseUpload}
+                                className="hidden"
+                                id="license-upload"
+                              />
+                              <label htmlFor="license-upload">
+                                <Button variant="outline" size="sm" asChild>
+                                  <span className="cursor-pointer">
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Upload Image
+                                  </span>
+                                </Button>
+                              </label>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -271,6 +405,21 @@ export default function DriverProfile({ params }: DriverProfileProps) {
                 </div>
               </CardContent>
             </Card>
+
+            {isEditing && (
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  className="bg-[#1e786c] hover:bg-[#1e786c]/90"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

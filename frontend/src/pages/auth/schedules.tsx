@@ -20,21 +20,6 @@ export default function Schedules() {
     }
   }, [user]);
 
-  const loadAllTrips = async () => {
-    try {
-      setLoading(true);
-      const response = await tripsAPI.getTrips();
-      if (response.success) {
-        setTrips(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to load all trips:', error);
-      setError('Failed to load scheduled trips');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadDriverTrips = async () => {
     if (!user?.id) return;
 
@@ -155,7 +140,7 @@ export default function Schedules() {
     <AuthLayout title="Schedules">
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-[#1e786c] mb-8">
-          {user?.user_type === 'admin' ? 'All Trip Schedules' : 'My Trip Schedule'}
+          My Trip Schedule
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -216,7 +201,7 @@ export default function Schedules() {
               <p className="text-red-500 text-center py-8">{error}</p>
             ) : user?.user_type !== "driver" ? (
               <p className="text-gray-500 text-center py-8">
-                Trip schedules are only available for drivers and administrators
+                Trip schedules are only available for drivers
               </p>
             ) : dailyTrips.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
