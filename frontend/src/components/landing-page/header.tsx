@@ -26,7 +26,7 @@ export default function LandingPageHeader() {
       className={`fixed top-0 w-full z-50 transition-all duration-700 ${
         scrolled
           ? "bg-black/90 backdrop-blur-xl shadow-2xl py-2"
-          : "bg-transparent py-4"
+          : "bg-[#1e786c] py-4"
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6">

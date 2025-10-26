@@ -1,4 +1,10 @@
-import type { ScheduleType, Driver, Transaction } from "@/types/type";
+import type {
+  ScheduleType,
+  Driver,
+  Transaction,
+  Notification,
+  MaintenanceRecord,
+} from "@/types/type";
 
 export const MockData: ScheduleType[] = [
   {
@@ -883,5 +889,105 @@ export const mockTransactions: Transaction[] = [
       status: "unpaid",
       remarks: "Payment Required",
     },
+  },
+];
+
+export const mockNotifications: Notification[] = [
+  {
+    id: "ntf_001",
+    title: "Payment Received",
+    message: "You’ve received a payment of $1,250 from Acme Corp.",
+    type: "payment",
+    priority: "high",
+    read: false,
+    createdAt: "2025-10-26T18:42:00.000Z",
+    actor: {
+      name: "Acme Finance Bot",
+      avatarUrl: "https://cdn.example.com/avatars/acme-bot.png",
+    },
+    actions: [
+      { label: "View Transaction", url: "/transactions/785" },
+      { label: "Download Receipt", url: "/receipts/785" },
+    ],
+    meta: {
+      relatedEntity: { type: "transaction", id: "785" },
+      ipAddress: "192.168.1.42",
+    },
+  },
+  {
+    id: "ntf_002",
+    title: "Invoice #INV-4099 Sent",
+    message: "Your invoice to Global Logistics Ltd. has been emailed.",
+    type: "invoice",
+    priority: "medium",
+    read: true,
+    createdAt: "2025-10-25T14:10:00.000Z",
+    readAt: "2025-10-25T14:45:00.000Z",
+    actor: { name: "Billing Assistant" },
+    meta: {
+      relatedEntity: { type: "invoice", id: "INV-4099" },
+    },
+  },
+  {
+    id: "ntf_003",
+    title: "Unusual Login Attempt",
+    message: "We detected a login attempt from Dubai using Chrome on Windows.",
+    type: "security",
+    priority: "critical",
+    read: false,
+    createdAt: "2025-10-26T02:15:00.000Z",
+    actions: [{ label: "Secure Account", url: "/settings/security" }],
+    meta: {
+      ipAddress: "102.89.224.51",
+      userAgent: "Chrome/142.0 (Windows 10)",
+    },
+  },
+  {
+    id: "ntf_004",
+    title: "New Milestone Unlocked 🎉",
+    message: "You’ve completed 100 successful deliveries this month!",
+    type: "achievement",
+    priority: "low",
+    read: true,
+    createdAt: "2025-10-20T09:22:00.000Z",
+    readAt: "2025-10-20T09:35:00.000Z",
+    actor: { name: "Achievement System" },
+  },
+];
+
+export const mockMaintenanceHistory: MaintenanceRecord[] = [
+  {
+    id: "mnt-001",
+    dateIssued: "2025-05-13T10:00:00Z",
+    driverName: "Sam Dela Cruz",
+    driverCode: "DRV-01",
+    truckPlate: "LHE 1234",
+    issue: "Flat Tire",
+    amount: 2000,
+    currency: "₱",
+    status: "Cleared",
+    clearedAt: "2025-05-16T11:00:00Z",
+  },
+  {
+    id: "mnt-002",
+    dateIssued: "2025-05-13T10:00:00Z",
+    driverName: "Mark Sy",
+    driverCode: "DRV-02",
+    truckPlate: "YGV 4128",
+    issue: "Broken breaks",
+    amount: 5000,
+    currency: "₱",
+    status: "Processing",
+  },
+  {
+    id: "mnt-003",
+    dateIssued: "2025-05-13T10:00:00Z",
+    driverName: "Shawn Tan",
+    driverCode: "DRV-03",
+    truckPlate: "POU 1283",
+    issue: "Oil Change",
+    amount: 7000,
+    currency: "₱",
+    status: "Processing",
   },
 ];

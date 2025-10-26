@@ -19,6 +19,9 @@ import TripLogsPage from "./pages/auth/trip-logs";
 import PaymentsPage from "./pages/auth/payments";
 import ReceiptPage from "./pages/auth/receipt";
 import Bookings from "./pages/auth/bookings";
+import TrackingPage from "./pages/public/trackings";
+import RateTheDriver from "./pages/auth/rate-the-driver";
+import MaintenanceHistoryPage from "./pages/auth/maintenace-history";
 function App() {
   return (
     <AuthProvider>
@@ -58,6 +61,13 @@ function App() {
             />
           )}
         </Route>
+        <Route path="/rate-the-driver/:id">
+          {(params) => (
+            <ProtectedRoute
+              component={() => <RateTheDriver params={params} />}
+            />
+          )}
+        </Route>
         <Route path="/receipt/:id">
           {(params) => (
             <ProtectedRoute component={() => <ReceiptPage params={params} />} />
@@ -93,6 +103,15 @@ function App() {
             <ProtectedRoute component={TransactionHistoryPage} />
           )}
         />
+        <Route
+          path="/maintenance-history"
+          component={() => (
+            <ProtectedRoute component={MaintenanceHistoryPage} />
+          )}
+        />
+        <Route path="/trackings/:id">
+          {(params) => <TrackingPage params={params} />}
+        </Route>
         <Route>
           <h1>404 - Page Not Found</h1>
         </Route>

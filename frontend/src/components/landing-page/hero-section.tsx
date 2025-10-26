@@ -3,11 +3,13 @@ import FloatingParticles from "./presents/floating-particles";
 import { Shield, Zap, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 export default function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [bookingId, setBookingId] = useState("");
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     const handleMouseMove = (e: { clientX: number; clientY: number }) => {
@@ -27,17 +29,15 @@ export default function HeroSection() {
 
   const handleTrack = () => {
     if (!bookingId.trim()) return;
-    alert(`Tracking booking ID: ${bookingId}`);
+    setLocation(`/trackings/${bookingId.trim()}`);
   };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-32 pb-10 sm:pt-48 sm:pb-20">
-      {/* Background gradients */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1e786c] to-black">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#cfab3d_0%,transparent_50%)]" />
       </div>
 
-      {/* Animated circles */}
       {!isMobile && (
         <>
           <div
@@ -66,7 +66,6 @@ export default function HeroSection() {
       <FloatingParticles />
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 text-center">
-        {/* Headings */}
         <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-6">
           <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight">
             <span className="inline-block animate-fade-in-up text-[#cfab3d] hover:scale-105 transition-transform duration-500">
@@ -87,7 +86,6 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* Track Your Shipping Input */}
         <div className="mt-8 sm:mt-12 flex justify-center animate-fade-in-up animation-delay-900">
           <div className="flex w-full max-w-md sm:max-w-lg items-center space-x-2 bg-black/40 border border-[#cfab3d] rounded-full p-1.5 backdrop-blur-md">
             <Input
@@ -106,7 +104,6 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 animate-fade-in-up animation-delay-1200">
           {[
             { icon: Shield, label: "Safe Delivery", value: "10K+" },

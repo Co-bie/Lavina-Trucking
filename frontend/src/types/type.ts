@@ -309,3 +309,64 @@ type TripStop = {
   date: string;
   time: string;
 };
+
+export type NotificationType =
+  | "payment"
+  | "invoice"
+  | "system"
+  | "security"
+  | "achievement"
+  | "message";
+
+export type NotificationPriority = "low" | "medium" | "high" | "critical";
+
+export interface NotificationAction {
+  label: string;
+  url?: string;
+  method?: "GET" | "POST";
+}
+
+export interface NotificationMeta {
+  ipAddress?: string;
+  userAgent?: string;
+  relatedEntity?: {
+    type: "invoice" | "user" | "transaction" | "system";
+    id: string | number;
+  };
+}
+
+export type Notification = {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  read: boolean;
+  createdAt: string;
+  readAt?: string;
+  actor?: {
+    name: string;
+    avatarUrl?: string;
+  };
+  actions?: NotificationAction[];
+  meta?: NotificationMeta;
+};
+
+export type MaintenanceStatus =
+  | "Processing"
+  | "Cleared"
+  | "Pending"
+  | "Cancelled";
+
+export type MaintenanceRecord = {
+  id: string;
+  dateIssued: string;
+  driverName: string;
+  driverCode: string;
+  truckPlate: string;
+  issue: string;
+  amount: number;
+  currency?: string;
+  status: MaintenanceStatus;
+  clearedAt?: string;
+};

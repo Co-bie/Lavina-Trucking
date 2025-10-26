@@ -7,6 +7,7 @@ import AuthLayout from "@/components/shared/auth-layout";
 import { profileAPI } from "@/services/api";
 import { useAuth } from "@/contexts/auth-context";
 import type { User } from "@/types/type";
+import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { user: authUser, updateUser } = useAuth();
@@ -27,12 +28,12 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      
+
       // Use the authenticated user data first
       if (authUser) {
         setUserData(authUser);
         setOriginalData(authUser);
-        
+
         if (authUser.profile_picture) {
           setProfilePic(authUser.profile_picture);
         }
@@ -42,12 +43,12 @@ export default function ProfilePage() {
 
       // Fallback to API call if no user in context
       const response = await profileAPI.getProfile();
-      
+
       if (response.data.success) {
         const profileData = response.data.data;
         setUserData(profileData);
         setOriginalData(profileData);
-        
+
         if (profileData.profile_picture) {
           setProfilePic(profileData.profile_picture);
         }
@@ -59,22 +60,30 @@ export default function ProfilePage() {
     }
   };
 
-  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (e.target.files?.[0]) {
       try {
         setUploadingPicture(true);
         const file = e.target.files[0];
-        
+
         // Show preview immediately
         const previewUrl = URL.createObjectURL(file);
         setProfilePic(previewUrl);
-        
+
         // Upload to server
-        const response = await profileAPI.uploadProfilePicture(file, authUser?.id);
-        
+        const response = await profileAPI.uploadProfilePicture(
+          file,
+          authUser?.id
+        );
+
         if (response.data.success) {
           setProfilePic(response.data.data.profile_picture);
-          setUserData(prev => ({ ...prev, profile_picture: response.data.data.profile_picture }));
+          setUserData((prev) => ({
+            ...prev,
+            profile_picture: response.data.data.profile_picture,
+          }));
           alert("Profile picture updated successfully!");
         }
       } catch (error: any) {
@@ -105,23 +114,23 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // Include the authenticated user's ID in the update data
       const updateData = {
         ...userData,
-        user_id: authUser?.id
+        user_id: authUser?.id,
       };
-      
+
       const response = await profileAPI.updateProfile(updateData);
-      
+
       if (response.data.success) {
         const updatedUserData = response.data.data;
         setOriginalData(updatedUserData);
         setUserData(updatedUserData);
-        
+
         // Update the auth context with the new user data
         updateUser(updatedUserData);
-        
+
         setIsEditing(false);
         alert("Profile updated successfully!");
       }
@@ -199,12 +208,18 @@ export default function ProfilePage() {
                   <AvatarImage src={profilePic} alt="Profile" />
                 ) : (
                   <AvatarFallback className="text-[#1e786c] font-bold text-2xl bg-[#cfab3d] bg-opacity-20">
-                    {userData.first_name && userData.last_name 
-                      ? `${userData.first_name.charAt(0)}${userData.last_name.charAt(0)}`.toUpperCase()
-                      : userData.name 
-                        ? userData.name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2).toUpperCase()
-                        : 'U'
-                    }
+                    {userData.first_name && userData.last_name
+                      ? `${userData.first_name.charAt(
+                          0
+                        )}${userData.last_name.charAt(0)}`.toUpperCase()
+                      : userData.name
+                      ? userData.name
+                          .split(" ")
+                          .map((n) => n.charAt(0))
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()
+                      : "U"}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -230,7 +245,14 @@ export default function ProfilePage() {
           </div>
 
           <form className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-5">
+            <div
+              className={cn(
+                "space-y-5",
+                userData.user_type === "driver"
+                  ? "md:col-span-1"
+                  : "md:col-span-2"
+              )}
+            >
               <div>
                 <label
                   htmlFor="first_name"
@@ -358,50 +380,52 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-[#1e786c] mb-2">
-                  Driver's License
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Upload a clear photo of your driver's license
-                </p>
-              </div>
+            {userData.user_type === "driver" && (
+              <div className="flex flex-col">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-[#1e786c] mb-2">
+                    Driver's License
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Upload a clear photo of your driver's license
+                  </p>
+                </div>
 
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#cfab3d] rounded-xl p-6 relative bg-gray-50 hover:bg-gray-100 transition cursor-pointer h-72">
-                {licensePic ? (
-                  <img
-                    src={licensePic}
-                    alt="Driver License"
-                    className="w-full h-full object-contain rounded-lg"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center text-gray-500">
-                    <Upload className="w-10 h-10 mb-3 text-[#1e786c]" />
-                    <p className="font-medium text-center">
-                      Drag & Drop or Click to Upload
-                    </p>
-                    <p className="text-sm text-gray-400 text-center mt-1">
-                      Driver's License Photo
-                    </p>
-                  </div>
-                )}
-                {isEditing && (
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={handleLicenseUpload}
-                  />
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#cfab3d] rounded-xl p-6 relative bg-gray-50 hover:bg-gray-100 transition cursor-pointer h-72">
+                  {licensePic ? (
+                    <img
+                      src={licensePic}
+                      alt="Driver License"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center text-gray-500">
+                      <Upload className="w-10 h-10 mb-3 text-[#1e786c]" />
+                      <p className="font-medium text-center">
+                        Drag & Drop or Click to Upload
+                      </p>
+                      <p className="text-sm text-gray-400 text-center mt-1">
+                        Driver's License Photo
+                      </p>
+                    </div>
+                  )}
+                  {isEditing && (
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={handleLicenseUpload}
+                    />
+                  )}
+                </div>
+
+                {!isEditing && (
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Contact support to update your driver's license
+                  </p>
                 )}
               </div>
-
-              {!isEditing && (
-                <p className="text-sm text-gray-500 mt-4 text-center">
-                  Contact support to update your driver's license
-                </p>
-              )}
-            </div>
+            )}
           </form>
 
           {isEditing && (
