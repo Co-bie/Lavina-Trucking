@@ -3,13 +3,34 @@ import AuthLayout from "@/components/shared/auth-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function TripLogsPage() {
   const [incidentFiles, setIncidentFiles] = useState<File[]>([]);
+  const [amPm, setAmPm] = useState({
+    processing: "AM",
+    enroute: "AM",
+    delivered: "AM",
+  });
+
+  const locations = ["Jacinato", "Ulas", "Bangkal", "Agdao", "Puan", "Toril"];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setIncidentFiles(files);
+  };
+
+  const toggleAmPm = (key: keyof typeof amPm) => {
+    setAmPm((prev) => ({
+      ...prev,
+      [key]: prev[key] === "AM" ? "PM" : "AM",
+    }));
   };
 
   return (
@@ -24,24 +45,90 @@ export default function TripLogsPage() {
 
               <div className="flex items-center justify-between gap-4 col-span-2">
                 <Label>Processing:</Label>
-                <Input placeholder="Time" className="w-1/2" />
-                <Input placeholder="Location" className="w-1/2" />
+                <div className="flex items-center gap-2 w-1/2">
+                  <Input placeholder="Time" />
+                  <Button
+                    type="button"
+                    variant={amPm.processing === "AM" ? "secondary" : "default"}
+                    size="sm"
+                    className="w-14"
+                    onClick={() => toggleAmPm("processing")}
+                  >
+                    {amPm.processing}
+                  </Button>
+                </div>
+                <Select>
+                  <SelectTrigger className="w-1/2">
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div />
 
               <div className="flex items-center justify-between gap-4 col-span-2">
                 <Label>En Route:</Label>
-                <Input placeholder="Time" className="w-1/2" />
-                <Input placeholder="Location" className="w-1/2" />
+                <div className="flex items-center gap-2 w-1/2">
+                  <Input placeholder="Time" />
+                  <Button
+                    type="button"
+                    variant={amPm.enroute === "AM" ? "secondary" : "default"}
+                    size="sm"
+                    className="w-14"
+                    onClick={() => toggleAmPm("enroute")}
+                  >
+                    {amPm.enroute}
+                  </Button>
+                </div>
+                <Select>
+                  <SelectTrigger className="w-1/2">
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div />
 
               <div className="flex items-center justify-between gap-4 col-span-2">
                 <Label>Delivered:</Label>
-                <Input placeholder="Time" className="w-1/2" />
-                <Input placeholder="Location" className="w-1/2" />
+                <div className="flex items-center gap-2 w-1/2">
+                  <Input placeholder="Time" />
+                  <Button
+                    type="button"
+                    variant={amPm.delivered === "AM" ? "secondary" : "default"}
+                    size="sm"
+                    className="w-14"
+                    onClick={() => toggleAmPm("delivered")}
+                  >
+                    {amPm.delivered}
+                  </Button>
+                </div>
+                <Select>
+                  <SelectTrigger className="w-1/2">
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

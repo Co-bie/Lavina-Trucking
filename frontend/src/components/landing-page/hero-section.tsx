@@ -34,10 +34,11 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-32 pb-10 sm:pt-48 sm:pb-20">
+      .{" "}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1e786c] to-black">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#cfab3d_0%,transparent_50%)]" />
       </div>
-
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 from-[0%] to-black to-[100%] z-[1]" />
       {!isMobile && (
         <>
           <div
@@ -62,9 +63,8 @@ export default function HeroSection() {
           />
         </>
       )}
-
       <FloatingParticles />
-
+      {/* Foreground Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 text-center">
         <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-6">
           <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight">
@@ -124,7 +124,6 @@ export default function HeroSection() {
           ))}
         </div>
       </div>
-
       {!isMobile && (
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 sm:w-8 sm:h-12 rounded-full border-2 border-[#cfab3d] p-1 sm:p-2">
